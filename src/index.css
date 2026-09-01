@@ -1,0 +1,50 @@
+@import "tailwindcss";
+
+@theme {
+  --font-heading: "Montserrat", sans-serif;
+  --font-body: "Plus Jakarta Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-mono: "JetBrains Mono", monospace;
+
+  --color-first-blue: #0066B2;
+  --color-first-navy: #002B49;
+  --color-first-red: #ED1C24;
+  --color-first-green: #78BE20;
+  --color-first-cyan: #00A3E0;
+  --color-first-orange: #F57E25;
+  --color-first-dark: #001A2E;
+}
+
+body {
+  font-family: var(--font-body);
+  background-color: #f8fafc;
+  color: #0f172a;
+  overflow-x: hidden;
+}
+
+h1, h2, h3, h4, h5, h6, .font-heading {
+  font-family: var(--font-heading);
+}
+
+.font-mono-code {
+  font-family: var(--font-mono);
+}
+
+/* Custom FIRST scrollbars */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f5f9;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #0066B2;
+}
+
