@@ -201,7 +201,7 @@ export const Footer: React.FC<FooterProps> = ({ onOpenAdminLogin }) => {
         {/* Bottom Legal & Trademarks Disclaimer */}
         <div className="pt-8 flex flex-col md:flex-row items-center justify-between gap-4 text-[11px] text-slate-500">
           <p className="text-center md:text-left">
-            © {new Date().getFullYear()} {settings.platformName}. Projeto independente, sem afiliação oficial presumida. Marcas citadas pertencem aos seus respectivos titulares.
+            © {new Date().getFullYear()} {settings.platformName}. Criado por <strong className="text-slate-300">João Pedro Albuquerque Montenegro</strong>. Projeto independente, sem afiliação oficial presumida. Marcas citadas pertencem aos seus respectivos titulares.
           </p>
           <div className="flex items-center gap-4 shrink-0">
             <a href="https://www.firstinspires.org" target="_blank" rel="noopener noreferrer" className="hover:text-slate-300 inline-flex items-center gap-1 transition-colors">
