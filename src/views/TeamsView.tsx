@@ -44,7 +44,7 @@ export const TeamsView: React.FC = () => {
         <div className="border-b border-slate-200 pb-8 mb-10">
           <div className="inline-flex items-center gap-2 px-3 py-1 bg-blue-50 border border-blue-200 rounded-full mb-3 text-xs font-bold text-[#0066B2]">
             <Bot className="w-3.5 h-3.5 text-[#0066B2]" />
-            <span>Diretório Oficial de Equipes, Robôs & Pits FIRST®</span>
+            <span>Diretório de equipes, robôs e projetos</span>
           </div>
 
           <h1 className="font-heading font-black text-3xl sm:text-5xl text-[#002B49] tracking-tight leading-tight">
@@ -112,7 +112,7 @@ export const TeamsView: React.FC = () => {
         {publishedTeams.length === 0 ? (
           <EmptyState
             title="Nenhuma equipe cadastrada no momento"
-            description="Os perfis oficiais das equipes estão sendo homologados pela comissão técnica da FIRST®."
+            description="Nenhum perfil de equipe verificado foi publicado ainda."
             adminActionTab="teams"
           />
         ) : filteredTeams.length === 0 ? (
@@ -163,7 +163,7 @@ export const TeamsView: React.FC = () => {
 
                   <div className="flex items-center gap-2 text-xs text-slate-500 mb-4">
                     <MapPin className="w-3.5 h-3.5 text-[#0066B2]" />
-                    <span>{team.city ? `${team.city} - ${team.location}` : team.location || 'Localização Oficial'}</span>
+                    <span>{team.city ? `${team.city} - ${team.location}` : team.location || 'Localização não informada'}</span>
                   </div>
 
                   {team.seekingSponsors && (

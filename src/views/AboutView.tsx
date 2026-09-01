@@ -31,15 +31,15 @@ export const AboutView: React.FC = () => {
           <div>
             <div className="inline-flex items-center gap-2 px-3 py-1 bg-blue-50 border border-blue-200 rounded-full mb-3 text-xs font-bold text-[#0066B2]">
               <Award className="w-3.5 h-3.5" />
-              <span>História, Missão & Valores Oficiais FIRST®</span>
+              <span>Missão, valores e referências</span>
             </div>
 
             <h1 className="font-heading font-black text-3xl sm:text-5xl text-[#002B49] tracking-tight">
-              Sobre a FIRST® & Parceria SENAI
+              Sobre o projeto
             </h1>
 
             <p className="text-base text-slate-600 max-w-3xl mt-3 leading-relaxed">
-              Fundada em 1989 pelo inventor <strong>Dean Kamen</strong> e pelo <strong>Dr. Woodie Flowers</strong>, a FIRST® (For Inspiration and Recognition of Science and Technology) é a principal comunidade global dedicada a preparar jovens para o futuro através da robótica e do método STEM.
+              {settings.missionText || 'Este portal divulga competições de robótica, equipes, resultados e oportunidades de apoio.'}
             </p>
           </div>
 
@@ -48,7 +48,7 @@ export const AboutView: React.FC = () => {
             <div className="h-8 w-px bg-slate-200" />
             <div className="flex flex-col">
               <SenaiLogo className="h-6 w-auto" variant="green" />
-              <span className="text-[9px] font-bold uppercase text-[#00884A] mt-0.5">Operador Brasil</span>
+              <span className="text-[9px] font-bold uppercase text-[#00884A] mt-0.5">Projeto independente</span>
             </div>
           </div>
         </div>
@@ -210,10 +210,10 @@ export const AboutView: React.FC = () => {
                 <SenaiLogo className="h-8 w-auto" variant="green" withSubtitle={true} />
               </div>
               <h3 className="font-heading font-black text-2xl sm:text-3xl text-[#002B49]">
-                Operador Oficial no Brasil
+                Referências em robótica educacional
               </h3>
               <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
-                O <strong>SENAI (Serviço Nacional de Aprendizagem Industrial)</strong> e o <strong>SESI</strong> são os operadores oficiais dos torneios FIRST® em território nacional. Juntos, conectam mais de 500 escolas e institutos técnicos à rede mundial de robótica.
+                A FIRST®, o SENAI e o SESI são referências citadas neste projeto. Calendários, vínculos institucionais e regras devem ser confirmados diretamente em seus canais oficiais.
               </p>
             </div>
 
@@ -224,7 +224,7 @@ export const AboutView: React.FC = () => {
                 </div>
                 <h4 className="font-heading font-bold text-sm text-[#002B49]">Infraestrutura de Laboratórios</h4>
                 <p className="text-xs text-slate-600 leading-relaxed">
-                  Acesso a centros de usinagem CNC, corte a laser, impressão 3D e eletrônica industrial para construção dos robôs.
+                  Laboratórios, impressão 3D, eletrônica e fabricação digital podem apoiar a construção e manutenção de robôs.
                 </p>
               </div>
 
@@ -234,7 +234,7 @@ export const AboutView: React.FC = () => {
                 </div>
                 <h4 className="font-heading font-bold text-sm text-[#002B49]">Arenas e Festivais Nacionais</h4>
                 <p className="text-xs text-slate-600 leading-relaxed">
-                  Organização dos Festivais Nacionais SESI/SENAI de Robótica com arenas oficiais e transmissão ao vivo.
+                  Eventos, arenas e transmissões devem ser cadastrados somente depois da verificação das informações pela equipe responsável.
                 </p>
               </div>
             </div>
@@ -246,13 +246,13 @@ export const AboutView: React.FC = () => {
           <div className="space-y-3">
             <div className="inline-flex items-center gap-2 px-3 py-1 bg-emerald-50 text-emerald-900 border border-emerald-200 rounded-full text-xs font-bold">
               <GraduationCap className="w-4 h-4 text-emerald-700" />
-              FIRST® Scholarship Program
+              Educação e oportunidades
             </div>
             <h3 className="font-heading text-2xl font-bold text-[#002B49]">
-              Mais de US$ 80 Milhões em Bolsas Acadêmicas
+              Formação além das competições
             </h3>
             <p className="text-xs sm:text-sm text-slate-600 max-w-xl leading-relaxed">
-              Mais de 200 universidades e empresas parceiras oferecem bolsas exclusivas para participantes e ex-alunos (Alumni) da FIRST®, abrindo portas para cursos de Engenharia, Ciência da Computação e Negócios.
+              O portal pode divulgar bolsas, mentorias e oportunidades acadêmicas quando houver fonte verificável e autorização para publicação.
             </p>
           </div>
           <button
@@ -267,10 +267,10 @@ export const AboutView: React.FC = () => {
         <div className="flex flex-col sm:flex-row items-center justify-between gap-4 p-6 sm:p-8 bg-slate-100 rounded-2xl border border-slate-200">
           <div>
             <h4 className="font-heading font-bold text-lg text-[#002B49]">
-              Deseja fundar ou cadastrar uma equipe oficial?
+              Deseja cadastrar uma equipe?
             </h4>
             <p className="text-xs text-slate-600">
-              Conheça as diretrizes de registro e suporte técnico para a nova temporada.
+              Envie as informações para análise antes da publicação.
             </p>
           </div>
           <button

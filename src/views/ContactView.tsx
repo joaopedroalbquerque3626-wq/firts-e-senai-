@@ -11,12 +11,13 @@ export const ContactView: React.FC = () => {
   const [phone, setPhone] = useState('');
   const [subject, setSubject] = useState('');
   const [message, setMessage] = useState('');
+  const [privacyConsent, setPrivacyConsent] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!name || !email || !subject || !message) return;
+    if (!name || !email || !subject || !message || !privacyConsent) return;
 
     setIsSubmitting(true);
     const res = await submitContact({
@@ -24,7 +25,8 @@ export const ContactView: React.FC = () => {
       email,
       phone: phone || undefined,
       subject,
-      message
+      message,
+      privacyConsent
     });
     setIsSubmitting(false);
 
@@ -35,6 +37,7 @@ export const ContactView: React.FC = () => {
       setPhone('');
       setSubject('');
       setMessage('');
+      setPrivacyConsent(false);
     }
   };
 
@@ -45,15 +48,15 @@ export const ContactView: React.FC = () => {
         <div className="border-b border-slate-200 pb-8 mb-12">
           <div className="inline-flex items-center gap-2 px-3 py-1 bg-blue-50 border border-blue-200 rounded-full mb-3 text-xs font-bold text-[#0066B2]">
             <Mail className="w-3.5 h-3.5 text-[#0066B2]" />
-            <span>Suporte Técnico, Inscrições & Voluntariado FIRST®</span>
+            <span>Contato, inscrições e parcerias</span>
           </div>
 
           <h1 className="font-heading font-black text-3xl sm:text-5xl text-[#002B49] tracking-tight leading-tight">
-            Canais Oficiais de Atendimento
+            Canais de atendimento
           </h1>
 
           <p className="text-sm sm:text-base text-slate-600 max-w-2xl mt-2 leading-relaxed">
-            Entre em contato com os coordenadores operacionais da FIRST®, envie dúvidas sobre regras de arena (Game Manuals), registre novas equipes ou voluntarie-se como juiz e árbitro.
+            Envie dúvidas, solicitações de cadastro, propostas de parceria ou pedidos de atualização de conteúdo.
           </p>
         </div>
 
@@ -71,7 +74,7 @@ export const ContactView: React.FC = () => {
                     Entidade / Organização
                   </span>
                   <p className="text-[#002B49] font-bold text-sm">
-                    {settings.organizationName || 'FIRST® Inspires / FIRST® Brasil'}
+                    {settings.organizationName || settings.platformName}
                   </p>
                 </div>
 
@@ -81,12 +84,13 @@ export const ContactView: React.FC = () => {
                     <span className="text-[10px] uppercase font-bold text-slate-400 block">
                       E-mail de Suporte
                     </span>
-                    <a
-                      href={`mailto:${settings.officialEmail || 'suporte@firstinspires.org.br'}`}
-                      className="text-[#0066B2] font-semibold hover:underline"
-                    >
-                      {settings.officialEmail || 'suporte@firstinspires.org.br'}
-                    </a>
+                    {settings.officialEmail ? (
+                      <a href={`mailto:${settings.officialEmail}`} className="text-[#0066B2] font-semibold hover:underline">
+                        {settings.officialEmail}
+                      </a>
+                    ) : (
+                      <span className="text-slate-500">Use o formulário ao lado</span>
+                    )}
                   </div>
                 </div>
 
@@ -94,10 +98,10 @@ export const ContactView: React.FC = () => {
                   <Phone className="w-4 h-4 text-[#0066B2] mt-0.5 shrink-0" />
                   <div>
                     <span className="text-[10px] uppercase font-bold text-slate-400 block">
-                      Telefone & WhatsApp Oficial
+                      Telefone & WhatsApp
                     </span>
                     <span className="text-slate-800 font-semibold">
-                      {settings.officialPhone || '+55 (11) 3322-0000'}
+                      {settings.officialPhone || 'Não informado'}
                     </span>
                   </div>
                 </div>
@@ -109,7 +113,7 @@ export const ContactView: React.FC = () => {
                       Sede & Coordenação Operacional
                     </span>
                     <span className="text-slate-800">
-                      {settings.officialAddress || 'São Paulo, SP - Brasil | Manchester, NH - USA'}
+                      {settings.officialAddress || 'Não informado'}
                     </span>
                   </div>
                 </div>
@@ -121,33 +125,33 @@ export const ContactView: React.FC = () => {
                   Redes Sociais & Transmissões
                 </span>
                 <div className="flex items-center gap-3">
-                  <a
-                    href="https://instagram.com/firstinspires"
+                  {settings.socialLinks.instagram && <a
+                    href={settings.socialLinks.instagram}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="p-2.5 bg-slate-100 hover:bg-slate-200 text-[#002B49] rounded-xl transition-colors"
                     title="Instagram FIRST"
                   >
                     <Instagram className="w-4 h-4" />
-                  </a>
-                  <a
-                    href="https://youtube.com/firstinspires"
+                  </a>}
+                  {settings.socialLinks.youtube && <a
+                    href={settings.socialLinks.youtube}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="p-2.5 bg-slate-100 hover:bg-slate-200 text-[#002B49] rounded-xl transition-colors"
                     title="YouTube FIRST"
                   >
                     <Youtube className="w-4 h-4" />
-                  </a>
-                  <a
-                    href="https://linkedin.com/company/firstinspires"
+                  </a>}
+                  {settings.socialLinks.linkedin && <a
+                    href={settings.socialLinks.linkedin}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="p-2.5 bg-slate-100 hover:bg-slate-200 text-[#002B49] rounded-xl transition-colors"
                     title="LinkedIn FIRST"
                   >
                     <Linkedin className="w-4 h-4" />
-                  </a>
+                  </a>}
                 </div>
               </div>
             </div>
@@ -159,10 +163,10 @@ export const ContactView: React.FC = () => {
                 <span>Voluntariado FIRST®</span>
               </div>
               <h3 className="font-heading font-bold text-lg text-white">
-                Seja um Mentor, Juiz ou Árbitro Oficial
+                Apoie como mentor ou voluntário
               </h3>
               <p className="text-xs text-slate-300 leading-relaxed">
-                Toda a magia dos torneios acontece graças a mais de 200.000 voluntários ao redor do mundo. Compartilhe sua experiência de engenharia ou pedagogia com os jovens.
+                Compartilhe experiência técnica, educacional ou organizacional com as equipes e projetos cadastrados.
               </p>
             </div>
           </div>
@@ -265,13 +269,27 @@ export const ContactView: React.FC = () => {
                     ></textarea>
                   </div>
 
+                  <div className="flex items-start gap-2">
+                    <input
+                      id="contact-privacy-consent"
+                      type="checkbox"
+                      required
+                      checked={privacyConsent}
+                      onChange={(event) => setPrivacyConsent(event.target.checked)}
+                      className="mt-0.5 h-4 w-4 accent-[#0066B2]"
+                    />
+                    <label htmlFor="contact-privacy-consent" className="text-xs text-slate-600">
+                      Autorizo o uso destes dados exclusivamente para receber retorno sobre esta mensagem.
+                    </label>
+                  </div>
+
                   <button
                     type="submit"
-                    disabled={isSubmitting}
+                    disabled={isSubmitting || !privacyConsent}
                     className="px-8 py-3.5 bg-[#0066B2] hover:bg-[#004C85] text-white text-xs font-bold uppercase tracking-wider rounded-xl transition-all shadow-md flex items-center gap-2 disabled:opacity-50"
                   >
                     <Send className="w-4 h-4" />
-                    <span>{isSubmitting ? 'Enviando Mensagem...' : 'Enviar Mensagem Oficial'}</span>
+                    <span>{isSubmitting ? 'Enviando Mensagem...' : 'Enviar mensagem'}</span>
                   </button>
                 </form>
               )}

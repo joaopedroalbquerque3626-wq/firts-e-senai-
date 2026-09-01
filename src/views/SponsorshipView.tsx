@@ -29,7 +29,7 @@ export const SponsorshipView: React.FC = () => {
   const [targetTeamId, setTargetTeamId] = useState('');
   const [investmentRange, setInvestmentRange] = useState('');
   const [message, setMessage] = useState('');
-  const [privacyConsent, setPrivacyConsent] = useState(true);
+  const [privacyConsent, setPrivacyConsent] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
 
@@ -37,7 +37,7 @@ export const SponsorshipView: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!companyName || !contactName || !email || !phone || !message) return;
+    if (!companyName || !contactName || !email || !phone || !message || !privacyConsent) return;
 
     setIsSubmitting(true);
     let targetName = '';
@@ -87,7 +87,7 @@ export const SponsorshipView: React.FC = () => {
             </h1>
 
             <p className="text-base sm:text-lg text-slate-600 max-w-3xl leading-relaxed">
-              Apoiando a FIRST® e o SENAI, sua empresa investe diretamente no desenvolvimento de talentos de alta performance, diversidade na tecnologia e inovação para a indústria brasileira.
+              Ao apoiar equipes e competições verificadas, sua empresa pode contribuir com formação técnica, diversidade e inovação.
             </p>
           </div>
 
@@ -96,7 +96,7 @@ export const SponsorshipView: React.FC = () => {
             <div className="h-8 w-px bg-slate-200" />
             <div className="flex flex-col">
               <SenaiLogo className="h-6 w-auto" variant="green" />
-              <span className="text-[9px] font-bold uppercase text-[#00884A] mt-0.5">Operador Brasil</span>
+              <span className="text-[9px] font-bold uppercase text-[#00884A] mt-0.5">Projeto independente</span>
             </div>
           </div>
         </div>
@@ -145,7 +145,7 @@ export const SponsorshipView: React.FC = () => {
           <div className="mb-16">
             <div className="border-b border-slate-200 pb-4 mb-8">
               <h2 className="font-heading text-2xl font-bold text-[#002B49]">
-                Cotas Oficiais de Patrocínio
+                Oportunidades de patrocínio
               </h2>
               <p className="text-xs sm:text-sm text-slate-600 mt-1">
                 Selecione uma modalidade de patrocínio ou solicite uma proposta personalizada.
@@ -160,7 +160,7 @@ export const SponsorshipView: React.FC = () => {
                 >
                   <div>
                     <span className="px-3 py-1 bg-blue-50 text-[#0066B2] text-xs font-bold rounded-full inline-block mb-3">
-                      {opp.quotaName}
+                      {opp.tierOrValue || 'Oportunidade disponível'}
                     </span>
                     <h3 className="font-heading font-bold text-xl text-[#002B49] mb-2">
                       {opp.title}
@@ -168,28 +168,10 @@ export const SponsorshipView: React.FC = () => {
                     <p className="text-xs text-slate-600 mb-4 leading-relaxed">
                       {opp.description}
                     </p>
-                    {opp.priceValue && (
-                      <div className="text-lg font-heading font-black text-[#0066B2] mb-4">
-                        {opp.priceValue}
-                      </div>
-                    )}
-                    {opp.deliverables && opp.deliverables.length > 0 && (
-                      <div className="space-y-2 mb-6">
-                        <span className="text-[11px] font-bold uppercase text-slate-400 block">
-                          Entregas Incluídas:
-                        </span>
-                        {opp.deliverables.map((del, idx) => (
-                          <div key={idx} className="flex items-start gap-2 text-xs text-slate-700">
-                            <CheckCircle className="w-3.5 h-3.5 text-[#78BE20] shrink-0 mt-0.5" />
-                            <span>{del}</span>
-                          </div>
-                        ))}
-                      </div>
-                    )}
                   </div>
 
                   <button
-                    onClick={() => openLeadModal({ type: 'INSTITUTIONAL', name: `${opp.quotaName} - ${opp.title}` })}
+                    onClick={() => openLeadModal({ type: 'INSTITUTIONAL', name: `${opp.tierOrValue || 'Oportunidade'} - ${opp.title}` })}
                     className="w-full py-2.5 bg-[#0066B2] hover:bg-[#004C85] text-white text-xs font-bold uppercase tracking-wider rounded-lg transition-all"
                   >
                     Solicitar esta Cota
@@ -295,11 +277,9 @@ export const SponsorshipView: React.FC = () => {
                     onChange={(e) => setInterestType(e.target.value as InterestType)}
                     className="w-full px-4 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-xs text-slate-900 font-semibold focus:ring-2 focus:ring-[#0066B2] focus:outline-none"
                   >
-                    <option value="PATROCINAR_COMPETICAO">Patrocinar Torneio / Arena Oficial</option>
+                    <option value="PATROCINAR_COMPETICAO">Patrocinar competição</option>
                     <option value="PATROCINAR_EQUIPE">Patrocinar Equipe Específica de Robótica</option>
-                    <option value="APOIO_INSTITUCIONAL">Fundo de Bolsas & Doação de Kits STEM</option>
-                    <option value="ANUNCIAR_MARCA">Exposição de Marca & Estande nos Pits</option>
-                    <option value="DUVIDA_GERAL">Outro / Parceria Educacional</option>
+                    <option value="PARCERIA_INSTITUCIONAL">Parceria institucional</option>
                   </select>
                 </div>
 
@@ -345,13 +325,13 @@ export const SponsorshipView: React.FC = () => {
                   className="accent-[#0066B2] w-4 h-4 cursor-pointer rounded"
                 />
                 <label htmlFor="privacy" className="text-xs text-slate-600 cursor-pointer">
-                  Concordo com a política de privacidade e em receber o contato da comissão organizadora.
+                  Autorizo o uso destes dados exclusivamente para receber retorno sobre esta solicitação.
                 </label>
               </div>
 
               <button
                 type="submit"
-                disabled={isSubmitting}
+                disabled={isSubmitting || !privacyConsent}
                 className="px-8 py-3.5 bg-[#0066B2] hover:bg-[#004C85] text-white text-xs font-bold uppercase tracking-wider rounded-xl transition-all shadow-md flex items-center gap-2 disabled:opacity-50"
               >
                 {isSubmitting ? 'Enviando Proposta...' : 'Enviar Solicitação de Patrocínio'}

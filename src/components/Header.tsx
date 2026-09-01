@@ -8,7 +8,7 @@ interface HeaderProps {
 }
 
 export const Header: React.FC<HeaderProps> = ({ onOpenAdminLogin }) => {
-  const { activeRoute, navigateTo, openLeadModal, isAdmin, logoutAdmin } = useApp();
+  const { data, activeRoute, navigateTo, openLeadModal, isAdmin, logoutAdmin } = useApp();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const navItems = [
@@ -37,11 +37,11 @@ export const Header: React.FC<HeaderProps> = ({ onOpenAdminLogin }) => {
           <div className="flex items-center gap-3">
             <span className="inline-flex items-center gap-1.5 font-bold uppercase tracking-wider text-xs text-[#00A3E0]">
               <span className="w-2 h-2 rounded-full bg-[#78BE20] animate-pulse"></span>
-              FIRST® Inspires
+              {data.settings.platformName}
             </span>
             <span className="hidden sm:inline-block text-slate-300 text-xs">|</span>
             <span className="hidden sm:inline-block text-slate-200 text-xs font-medium">
-              More Than Robots® • Temporada Oficial de Robótica 2026
+              Competições • Equipes • Resultados • Patrocínio
             </span>
           </div>
 
@@ -80,7 +80,7 @@ export const Header: React.FC<HeaderProps> = ({ onOpenAdminLogin }) => {
             <div className="hidden sm:flex flex-col justify-center">
               <SenaiLogo className="h-5 sm:h-6 w-auto" variant="green" />
               <span className="text-[9px] font-extrabold uppercase tracking-wider text-[#00884A] leading-none mt-0.5">
-                Operador Oficial Brasil
+                Projeto independente
               </span>
             </div>
           </button>
@@ -145,6 +145,7 @@ export const Header: React.FC<HeaderProps> = ({ onOpenAdminLogin }) => {
               onClick={onOpenAdminLogin}
               className="text-slate-400 hover:text-[#002B49] p-2 transition-colors rounded-lg hover:bg-slate-100"
               title="Acesso Administrativo"
+              aria-label="Abrir acesso administrativo"
             >
               <Lock className="w-4 h-4" />
             </button>
@@ -166,7 +167,9 @@ export const Header: React.FC<HeaderProps> = ({ onOpenAdminLogin }) => {
             id="btn-mobile-menu-toggle"
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
             className="p-2 text-[#002B49] border border-slate-200 rounded-lg hover:bg-slate-100"
-            aria-label="Abrir menu de navegação"
+            aria-label={mobileMenuOpen ? 'Fechar menu de navegação' : 'Abrir menu de navegação'}
+            aria-expanded={mobileMenuOpen}
+            aria-controls="mobile-navigation-drawer"
           >
             {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
           </button>
@@ -207,7 +210,7 @@ export const Header: React.FC<HeaderProps> = ({ onOpenAdminLogin }) => {
               <FirstLogo className="h-7 w-auto" variant="color" />
               <div className="flex flex-col items-end">
                 <SenaiLogo className="h-5 w-auto" variant="green" />
-                <span className="text-[8px] font-bold uppercase text-[#00884A]">Operador Brasil</span>
+                <span className="text-[8px] font-bold uppercase text-[#00884A]">Projeto independente</span>
               </div>
             </div>
 

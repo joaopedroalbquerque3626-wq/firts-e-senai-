@@ -22,7 +22,7 @@ export const LeadModal: React.FC = () => {
   const [targetTeamId, setTargetTeamId] = useState('');
   const [investmentRange, setInvestmentRange] = useState('');
   const [message, setMessage] = useState('');
-  const [privacyConsent, setPrivacyConsent] = useState(true);
+  const [privacyConsent, setPrivacyConsent] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
 
@@ -44,7 +44,7 @@ export const LeadModal: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!companyName || !contactName || !email || !phone || !message) {
+    if (!companyName || !contactName || !email || !phone || !message || !privacyConsent) {
       return;
     }
 
@@ -87,6 +87,9 @@ export const LeadModal: React.FC = () => {
     setPhone('');
     setWebsite('');
     setMessage('');
+    setTargetCompetitionId('');
+    setTargetTeamId('');
+    setPrivacyConsent(false);
     closeLeadModal();
   };
 
@@ -95,6 +98,9 @@ export const LeadModal: React.FC = () => {
       id="lead-modal-overlay"
       className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/80 backdrop-blur-sm overflow-y-auto"
       onClick={handleResetAndClose}
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="lead-modal-title"
     >
       <div
         id="lead-modal-content"
@@ -108,11 +114,11 @@ export const LeadModal: React.FC = () => {
               <HeartHandshake className="w-5 h-5" />
             </div>
             <div>
-              <h3 className="text-lg font-heading font-bold text-white">
-                Proposta de Patrocínio & Apoio FIRST®
+              <h3 id="lead-modal-title" className="text-lg font-heading font-bold text-white">
+                Proposta de Patrocínio & Apoio
               </h3>
               <p className="text-xs text-slate-300">
-                Conecte sua marca a eventos, arenas e equipes oficiais.
+                Conecte sua marca a competições, projetos e equipes.
               </p>
             </div>
           </div>
@@ -121,6 +127,7 @@ export const LeadModal: React.FC = () => {
             id="close-lead-modal-btn"
             onClick={handleResetAndClose}
             className="text-slate-400 hover:text-white p-1.5 rounded-lg hover:bg-white/10 transition-colors"
+            aria-label="Fechar formulário de patrocínio"
           >
             <X className="w-5 h-5" />
           </button>
@@ -135,7 +142,7 @@ export const LeadModal: React.FC = () => {
                 Manifestação de Interesse Registrada!
               </h4>
               <p className="text-sm text-slate-600 max-w-md mx-auto leading-relaxed">
-                Agradecemos o apoio à ciência, robótica e educação no Brasil. Nossa diretoria de relações institucionais entrará em contato via e-mail e telefone.
+                Agradecemos o apoio à ciência, robótica e educação. A equipe responsável entrará em contato por e-mail ou telefone.
               </p>
               <button
                 onClick={handleResetAndClose}
@@ -221,11 +228,9 @@ export const LeadModal: React.FC = () => {
                     onChange={(e) => setInterestType(e.target.value as InterestType)}
                     className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-lg text-xs sm:text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#0066B2]"
                   >
-                    <option value="PATROCINAR_COMPETICAO">Patrocinar Torneio Oficial</option>
+                    <option value="PATROCINAR_COMPETICAO">Patrocinar competição</option>
                     <option value="PATROCINAR_EQUIPE">Patrocinar Equipe / Robô</option>
-                    <option value="NAMING_RIGHTS">Naming Rights de Arena</option>
                     <option value="PARCERIA_INSTITUCIONAL">Parceria Institucional / Doação de Kits</option>
-                    <option value="OUTRO">Outro Modelo</option>
                   </select>
                 </div>
 
@@ -262,7 +267,6 @@ export const LeadModal: React.FC = () => {
                       <option value="">Geral / Equipes em Vulnerabilidade</option>
                       {data.teams.map((t) => (
                         <option key={t.id} value={t.id}>
-                          {t.teamNumber ? `${t.teamNumber} - ` : ''}
                           {t.name}
                         </option>
                       ))}
@@ -286,6 +290,20 @@ export const LeadModal: React.FC = () => {
                 />
               </div>
 
+              <div className="flex items-start gap-2">
+                <input
+                  id="lead-privacy-consent"
+                  type="checkbox"
+                  required
+                  checked={privacyConsent}
+                  onChange={(event) => setPrivacyConsent(event.target.checked)}
+                  className="mt-0.5 h-4 w-4 accent-[#0066B2]"
+                />
+                <label htmlFor="lead-privacy-consent" className="text-xs text-slate-600">
+                  Autorizo o uso destes dados exclusivamente para receber retorno sobre esta solicitação.
+                </label>
+              </div>
+
               <div className="flex items-center justify-between pt-4 border-t border-slate-100">
                 <button
                   type="button"
@@ -298,7 +316,7 @@ export const LeadModal: React.FC = () => {
                 <button
                   id="submit-lead-modal-btn"
                   type="submit"
-                  disabled={isSubmitting}
+                  disabled={isSubmitting || !privacyConsent}
                   className="px-6 py-2.5 bg-[#ED1C24] hover:bg-[#C91319] text-white text-xs font-bold uppercase tracking-wider rounded-lg shadow-sm hover:shadow transition-all flex items-center gap-2 disabled:opacity-50"
                 >
                   <span>{isSubmitting ? 'Enviando...' : 'Enviar Solicitação'}</span>

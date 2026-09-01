@@ -76,7 +76,7 @@ export const CompetitionsView: React.FC = () => {
         <div className="border-b border-slate-200 pb-8 mb-10">
           <div className="inline-flex items-center gap-2 px-3 py-1 bg-blue-50 border border-blue-200 rounded-full mb-3 text-xs font-bold text-[#0066B2]">
             <Trophy className="w-3.5 h-3.5 text-[#0066B2]" />
-            <span>Calendário Oficial & Arenas FIRST®</span>
+            <span>Calendário de competições e arenas</span>
           </div>
 
           <h1 className="font-heading font-black text-3xl sm:text-5xl text-[#002B49] tracking-tight leading-tight">
@@ -206,7 +206,7 @@ export const CompetitionsView: React.FC = () => {
                       </div>
                       <div className="flex items-center gap-2">
                         <MapPin className="w-3.5 h-3.5 text-[#0066B2]" />
-                        <span>{comp.city ? `${comp.city} - ${comp.location}` : comp.location || 'Arena Oficial'}</span>
+                        <span>{comp.city ? `${comp.city} - ${comp.location}` : comp.location || 'Local não informado'}</span>
                       </div>
                       <div className="flex items-center gap-2">
                         <Users className="w-3.5 h-3.5 text-[#0066B2]" />

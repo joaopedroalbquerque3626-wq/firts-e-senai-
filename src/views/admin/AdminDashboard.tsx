@@ -311,7 +311,7 @@ export const AdminDashboard: React.FC = () => {
         <div className="flex items-center gap-3">
           <span className="w-2.5 h-2.5 bg-[#84cc16] rounded-full animate-pulse border border-[#111111]"></span>
           <h1 className="font-serif text-xl text-[#111111]">
-            Painel de Controle Oficial
+            Painel de Controle
           </h1>
           <span className="text-xs font-mono text-[#666666] hidden sm:inline-block">
             | Gestão de Competições & Patrocínios
@@ -451,11 +451,15 @@ export const AdminDashboard: React.FC = () => {
               <div className="flex flex-wrap items-center gap-4">
                 <button
                   id="btn-seed-sample-data"
-                  onClick={seedSampleData}
+                  onClick={() => {
+                    if (confirm('Os dados de teste são fictícios e substituirão o conteúdo atual. Deseja continuar?')) {
+                      seedSampleData();
+                    }
+                  }}
                   className="flex items-center gap-2 px-5 py-2.5 bg-[#f4f3ef] border border-[#111111] text-[#111111] font-mono uppercase tracking-wider text-xs font-bold hover:bg-[#111111] hover:text-[#fdfdfd] transition-colors shadow-[2px_2px_0px_#111111] cursor-pointer"
                 >
                   <RefreshCw className="w-3.5 h-3.5" />
-                  <span>Carregar Dados Reais de Exemplo (Testes)</span>
+                  <span>Carregar Dados Fictícios de Teste</span>
                 </button>
 
                 <button
@@ -565,7 +569,7 @@ export const AdminDashboard: React.FC = () => {
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-xs font-mono uppercase tracking-wider text-[#666666] mb-1">
-                      Nome Oficial da Competição *
+                      Nome da Competição *
                     </label>
                     <input
                       type="text"
@@ -679,13 +683,13 @@ export const AdminDashboard: React.FC = () => {
 
                 <div>
                   <label className="block text-xs font-mono uppercase tracking-wider text-[#666666] mb-1">
-                    Descrição Editorial Oficial
+                    Descrição da competição
                   </label>
                   <textarea
                     rows={3}
                     value={editingComp.description || ''}
                     onChange={(e) => setEditingComp({ ...editingComp, description: e.target.value })}
-                    placeholder="Resumo oficial da competição..."
+                    placeholder="Resumo da competição..."
                     className="w-full px-3.5 py-2 bg-[#fdfdfd] border border-[#111111] text-[#111111] text-sm focus:outline-hidden focus:ring-1 focus:ring-[#C2410C]"
                   />
                 </div>
@@ -837,7 +841,7 @@ export const AdminDashboard: React.FC = () => {
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-xs font-mono uppercase tracking-wider text-[#666666] mb-1">
-                      Nome Oficial da Equipe *
+                      Nome da Equipe *
                     </label>
                     <input
                       type="text"
@@ -901,7 +905,7 @@ export const AdminDashboard: React.FC = () => {
                         onChange={(e) => setEditingTeam({ ...editingTeam, seekingSponsors: e.target.checked })}
                         className="accent-[#C2410C] w-4 h-4 cursor-pointer"
                       />
-                      <span>Buscando Patrocínio Oficial</span>
+                      <span>Buscando Patrocínio</span>
                     </label>
                   </div>
                 </div>
@@ -935,7 +939,7 @@ export const AdminDashboard: React.FC = () => {
 
                   <div>
                     <label className="block text-xs font-mono uppercase tracking-wider text-[#666666] mb-1">
-                      Instagram Oficial
+                      Instagram da equipe
                     </label>
                     <input
                       type="text"
@@ -1065,7 +1069,7 @@ export const AdminDashboard: React.FC = () => {
                 className="bg-[#ffffff] border-2 border-[#111111] shadow-[4px_4px_0px_#111111] p-6 sm:p-8 space-y-4"
               >
                 <h3 className="font-serif text-xl text-[#111111] border-b border-[#111111] pb-3">
-                  {isCreatingResult ? 'Lançar Resultado Oficial' : 'Editar Resultado'}
+                  {isCreatingResult ? 'Lançar Resultado' : 'Editar Resultado'}
                 </h3>
 
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">

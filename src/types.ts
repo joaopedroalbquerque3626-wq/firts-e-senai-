@@ -225,6 +225,7 @@ export interface ContactMessage {
   phone?: string;
   subject: string;
   message: string;
+  privacyConsent: boolean;
   read: boolean;
   createdAt: string;
 }

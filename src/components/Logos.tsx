@@ -309,7 +309,7 @@ export const FirstSenaiCoBrand: React.FC<{
         <div className="flex flex-col">
           <SenaiLogo className="h-5 w-auto" variant={isDark ? 'white' : 'green'} />
           <span className="text-[9px] font-bold uppercase tracking-wider text-[#00884A]">
-            Operador Oficial Brasil
+            Projeto independente
           </span>
         </div>
       </div>

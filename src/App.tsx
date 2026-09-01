@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useApp } from './context/AppContext';
 import { Header } from './components/Header';
 import { Footer } from './components/Footer';
@@ -17,7 +17,8 @@ import { ContactView } from './views/ContactView';
 import { AdminDashboard } from './views/admin/AdminDashboard';
 
 export const AppContent: React.FC = () => {
-  const { activeRoute, isAdminAuthenticated, showAdminLogin, setShowAdminLogin } = useApp();
+  const { activeRoute, isAdmin } = useApp();
+  const [showAdminLogin, setShowAdminLogin] = useState(false);
 
   // Scroll to top on route change
   useEffect(() => {
@@ -45,28 +46,28 @@ export const AppContent: React.FC = () => {
       case 'contato':
         return <ContactView />;
       case 'admin':
-        return isAdminAuthenticated ? <AdminDashboard /> : <HomeView />;
+        return isAdmin ? <AdminDashboard /> : <HomeView />;
       default:
         return <HomeView />;
     }
   };
 
-  const isAdminView = activeRoute === 'admin' && isAdminAuthenticated;
+  const isAdminView = activeRoute === 'admin' && isAdmin;
 
   return (
     <div className="min-h-screen bg-[#151515] text-[#F1EDE4] flex flex-col font-sans selection:bg-[#E95D2A] selection:text-white">
       {/* Global Header (Rendered across the application) */}
-      <Header />
+      <Header onOpenAdminLogin={() => setShowAdminLogin(true)} />
 
       {/* Main Page Content */}
       <main className="flex-1 w-full">{renderActiveView()}</main>
 
       {/* Global Footer (Rendered except in deep admin view) */}
-      {!isAdminView && <Footer />}
+      {!isAdminView && <Footer onOpenAdminLogin={() => setShowAdminLogin(true)} />}
 
       {/* Modals & Global Overlays */}
       <LeadModal />
-      <AdminLoginModal />
+      <AdminLoginModal isOpen={showAdminLogin} onClose={() => setShowAdminLogin(false)} />
       <ToastContainer />
     </div>
   );

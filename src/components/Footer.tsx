@@ -1,6 +1,6 @@
 import React from 'react';
 import { useApp } from '../context/AppContext';
-import { ArrowUpRight, ShieldCheck, Mail, Phone, MapPin, Award, ExternalLink, HeartHandshake } from 'lucide-react';
+import { ShieldCheck, Mail, Phone, MapPin, ExternalLink, HeartHandshake } from 'lucide-react';
 import { FirstLogo, SenaiLogo } from './Logos';
 
 interface FooterProps {
@@ -25,7 +25,7 @@ export const Footer: React.FC<FooterProps> = ({ onOpenAdminLogin }) => {
               Pronto para transformar a educação STEM e a indústria no Brasil?
             </h3>
             <p className="text-sm text-slate-300 max-w-xl">
-              Patrocine equipes locais, subsidie kits de robótica para escolas públicas ou torne-se um mentor voluntário oficial da FIRST® em parceria com o SENAI.
+              Patrocine equipes locais, apoie projetos educacionais ou ofereça mentoria técnica.
             </p>
           </div>
           <div className="flex flex-wrap items-center gap-3 shrink-0">
@@ -53,23 +53,22 @@ export const Footer: React.FC<FooterProps> = ({ onOpenAdminLogin }) => {
               <div className="flex flex-col">
                 <SenaiLogo className="h-6 w-auto" variant="white" />
                 <span className="text-[9px] font-bold uppercase tracking-wider text-[#78BE20]">
-                  Operador Oficial Brasil
+                  Projeto independente
                 </span>
               </div>
             </div>
             <p className="text-xs text-slate-400 leading-relaxed font-sans">
-              A FIRST® (For Inspiration and Recognition of Science and Technology) é uma organização global que prepara jovens dos 4 aos 18 anos para o futuro através de desafios empolgantes de robótica, operados no Brasil em parceria com o SENAI e SESI.
+              Portal independente para divulgação de competições, equipes, resultados e oportunidades de patrocínio em robótica educacional.
             </p>
-            <div className="pt-2 text-xs text-[#00A3E0] font-medium italic">
-              "We don't use kids to build robots. We use robots to build kids."
-              <span className="block not-italic text-slate-400 text-[11px] mt-0.5">— Dean Kamen, Fundador da FIRST®</span>
+            <div className="pt-2 text-xs text-[#00A3E0] font-medium">
+              Informações institucionais devem ser confirmadas nos canais oficiais das organizações citadas.
             </div>
           </div>
 
           {/* Column 2: Programs (The Progression) */}
           <div className="md:col-span-3 space-y-3">
             <h4 className="text-xs uppercase tracking-wider font-bold text-white border-b border-slate-800 pb-2">
-              Programas Oficiais FIRST®
+              Programas e referências
             </h4>
             <ul className="space-y-2 text-xs text-slate-300">
               <li>
@@ -105,7 +104,7 @@ export const Footer: React.FC<FooterProps> = ({ onOpenAdminLogin }) => {
                   className="hover:text-white transition-colors flex items-center justify-between w-full text-left group"
                 >
                   <span>FIRST® Alumni & Bolsas de Estudo</span>
-                  <span className="text-[10px] text-slate-500 group-hover:text-[#00A3E0]">$80M+</span>
+                  <span className="text-[10px] text-slate-500 group-hover:text-[#00A3E0]">Saiba mais</span>
                 </button>
               </li>
             </ul>
@@ -144,7 +143,7 @@ export const Footer: React.FC<FooterProps> = ({ onOpenAdminLogin }) => {
               </li>
               <li>
                 <button onClick={() => navigateTo('contato')} className="hover:text-white transition-colors">
-                  Canais Oficiais
+                  Contato
                 </button>
               </li>
             </ul>
@@ -156,20 +155,29 @@ export const Footer: React.FC<FooterProps> = ({ onOpenAdminLogin }) => {
               Contato & Localização
             </h4>
             <div className="space-y-2 text-xs text-slate-400">
-              <div className="flex items-start gap-2">
-                <MapPin className="w-4 h-4 text-[#00A3E0] shrink-0 mt-0.5" />
-                <span>{settings.officialAddress || 'São Paulo, SP - Brasil | Manchester, NH - USA'}</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <Mail className="w-4 h-4 text-[#00A3E0] shrink-0" />
-                <a href={`mailto:${settings.officialEmail || 'contato@firstinspires.org.br'}`} className="hover:text-white transition-colors">
-                  {settings.officialEmail || 'contato@firstinspires.org.br'}
-                </a>
-              </div>
-              <div className="flex items-center gap-2">
-                <Phone className="w-4 h-4 text-[#00A3E0] shrink-0" />
-                <span>{settings.officialPhone || '+55 (11) 3322-0000'}</span>
-              </div>
+              {settings.officialAddress && (
+                <div className="flex items-start gap-2">
+                  <MapPin className="w-4 h-4 text-[#00A3E0] shrink-0 mt-0.5" />
+                  <span>{settings.officialAddress}</span>
+                </div>
+              )}
+              {settings.officialEmail && (
+                <div className="flex items-center gap-2">
+                  <Mail className="w-4 h-4 text-[#00A3E0] shrink-0" />
+                  <a href={`mailto:${settings.officialEmail}`} className="hover:text-white transition-colors">
+                    {settings.officialEmail}
+                  </a>
+                </div>
+              )}
+              {settings.officialPhone && (
+                <div className="flex items-center gap-2">
+                  <Phone className="w-4 h-4 text-[#00A3E0] shrink-0" />
+                  <span>{settings.officialPhone}</span>
+                </div>
+              )}
+              {!settings.officialAddress && !settings.officialEmail && !settings.officialPhone && (
+                <span>Use o formulário de contato para falar com a equipe responsável pelo portal.</span>
+              )}
             </div>
 
             <div className="pt-2">
@@ -193,7 +201,7 @@ export const Footer: React.FC<FooterProps> = ({ onOpenAdminLogin }) => {
         {/* Bottom Legal & Trademarks Disclaimer */}
         <div className="pt-8 flex flex-col md:flex-row items-center justify-between gap-4 text-[11px] text-slate-500">
           <p className="text-center md:text-left">
-            © {new Date().getFullYear()} FIRST® Inspires. Todos os direitos reservados. FIRST®, More Than Robots®, Gracious Professionalism®, Coopertition®, FIRST® Robotics Competition (FRC®), FIRST® Tech Challenge (FTC®) e FIRST® LEGO® League (FLL®) são marcas registradas da FOR INSPIRATION AND RECOGNITION OF SCIENCE AND TECHNOLOGY. LEGO® é uma marca registrada do LEGO Group.
+            © {new Date().getFullYear()} {settings.platformName}. Projeto independente, sem afiliação oficial presumida. Marcas citadas pertencem aos seus respectivos titulares.
           </p>
           <div className="flex items-center gap-4 shrink-0">
             <a href="https://www.firstinspires.org" target="_blank" rel="noopener noreferrer" className="hover:text-slate-300 inline-flex items-center gap-1 transition-colors">

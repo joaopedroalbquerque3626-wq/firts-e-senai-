@@ -8,12 +8,11 @@ import {
   FileText,
   Download,
   ArrowLeft,
+  ArrowRight,
   ArrowUpRight,
   Clock,
   ShieldCheck,
-  Play,
-  Award,
-  Zap
+  Award
 } from 'lucide-react';
 import { CompetitionStatus } from '../types';
 
@@ -119,7 +118,7 @@ export const CompetitionDetailView: React.FC = () => {
               <div className="absolute bottom-6 left-6 right-6 text-white">
                 <div className="flex flex-wrap items-center gap-2 mb-2">
                   <span className="px-3 py-1 bg-[#002B49] text-white text-xs font-bold uppercase rounded shadow">
-                    {competition.division || competition.modality}
+                    {competition.modality}
                   </span>
                   <span className="px-3 py-1 bg-white/20 backdrop-blur-md text-white text-xs font-mono font-bold rounded">
                     {competition.season}
@@ -137,20 +136,8 @@ export const CompetitionDetailView: React.FC = () => {
               <div>{getStatusBadge(competition.status)}</div>
 
               <div className="flex flex-wrap items-center gap-3">
-                {competition.streamUrl && (
-                  <a
-                    href={competition.streamUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center gap-2 px-4 py-2.5 bg-[#ED1C24] text-white text-xs font-bold uppercase tracking-wider rounded-lg shadow-sm hover:bg-[#C91319] transition-all"
-                  >
-                    <Play className="w-3.5 h-3.5 fill-current" />
-                    <span>Assistir Transmissão Oficial</span>
-                  </a>
-                )}
-
                 <button
-                  onClick={() => openLeadModal(competition.id, competition.name)}
+                  onClick={() => openLeadModal({ type: 'COMPETITION', id: competition.id, name: competition.name })}
                   className="inline-flex items-center gap-1.5 px-4 py-2.5 bg-[#002B49] text-white text-xs font-bold uppercase tracking-wider rounded-lg hover:bg-[#001D33] transition-all"
                 >
                   <span>Patrocinar Evento</span>
@@ -204,7 +191,7 @@ export const CompetitionDetailView: React.FC = () => {
                 <div>
                   <div className="text-[10px] font-bold uppercase text-slate-400">Organização</div>
                   <div className="text-xs font-bold text-slate-800">
-                    {competition.organizerName || 'FIRST® Brasil / SESI'}
+                    {competition.organization || 'Organização não informada'}
                   </div>
                 </div>
               </div>
@@ -229,7 +216,7 @@ export const CompetitionDetailView: React.FC = () => {
                   </div>
                   <div>
                     <h4 className="text-xs font-bold text-slate-900">
-                      Game Manual & Regulamento Técnico Oficial
+                      Manual e regulamento técnico
                     </h4>
                     <p className="text-[11px] text-slate-600">
                       Consulte as dimensões de arena, regras de segurança, inspeção de robôs e pontuação.
@@ -252,15 +239,15 @@ export const CompetitionDetailView: React.FC = () => {
         </div>
 
         {/* Schedule & Stages */}
-        {competition.stages && competition.stages.length > 0 && (
+        {competition.schedule && competition.schedule.length > 0 && (
           <div className="bg-white rounded-2xl border border-slate-200 p-6 sm:p-8 mb-10 shadow-sm">
             <h2 className="text-xl font-heading font-bold text-[#002B49] mb-4 flex items-center gap-2">
               <Clock className="w-5 h-5 text-[#0066B2]" />
-              <span>Cronograma Oficial & Etapas do Torneio</span>
+              <span>Cronograma e etapas do torneio</span>
             </h2>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              {competition.stages.map((stage) => (
+              {competition.schedule.map((stage) => (
                 <div
                   key={stage.id}
                   className="p-4 rounded-xl bg-slate-50 border border-slate-200/80 space-y-2"
@@ -269,7 +256,7 @@ export const CompetitionDetailView: React.FC = () => {
                     {stage.date}
                   </div>
                   <h3 className="font-heading font-bold text-sm text-slate-900">
-                    {stage.name}
+                    {stage.title}
                   </h3>
                   {stage.description && (
                     <p className="text-xs text-slate-600 leading-relaxed">
@@ -306,7 +293,7 @@ export const CompetitionDetailView: React.FC = () => {
                   <div className="grid grid-cols-1 md:grid-cols-11 gap-3 items-center">
                     <div className="md:col-span-4 p-3 bg-red-50 rounded-lg border border-red-200 text-xs font-bold text-slate-900">
                       <span className="text-[10px] font-bold text-[#ED1C24] uppercase block">
-                        Aliança Vermelha {res.teamANumber ? `(${res.teamANumber})` : ''}
+                        Aliança Vermelha
                       </span>
                       {res.teamAName}
                     </div>
@@ -321,7 +308,7 @@ export const CompetitionDetailView: React.FC = () => {
 
                     <div className="md:col-span-4 p-3 bg-blue-50 rounded-lg border border-blue-200 text-xs font-bold text-slate-900 text-right">
                       <span className="text-[10px] font-bold text-[#0066B2] uppercase block">
-                        Aliança Azul {res.teamBNumber ? `(${res.teamBNumber})` : ''}
+                        Aliança Azul
                       </span>
                       {res.teamBName}
                     </div>
@@ -365,7 +352,7 @@ export const CompetitionDetailView: React.FC = () => {
                     />
                     <div>
                       <div className="text-[10px] font-mono font-bold text-[#0066B2]">
-                        {team.teamNumber || '#0000'}
+                        {team.modality}
                       </div>
                       <div className="font-heading font-bold text-xs text-slate-900 group-hover:text-[#0066B2]">
                         {team.name}

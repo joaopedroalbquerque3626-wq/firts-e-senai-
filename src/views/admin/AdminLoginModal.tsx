@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useApp } from '../../context/AppContext';
 import { X, Lock, KeyRound, ArrowRight } from 'lucide-react';
 
@@ -11,6 +11,15 @@ export const AdminLoginModal: React.FC<AdminLoginModalProps> = ({ isOpen, onClos
   const { loginAdmin, navigateTo } = useApp();
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') onClose();
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen, onClose]);
 
   if (!isOpen) return null;
 
@@ -32,6 +41,9 @@ export const AdminLoginModal: React.FC<AdminLoginModalProps> = ({ isOpen, onClos
       id="admin-login-modal-overlay"
       className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#111111]/70 backdrop-blur-xs"
       onClick={onClose}
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="admin-login-title"
     >
       <div
         id="admin-login-modal-content"
@@ -52,7 +64,7 @@ export const AdminLoginModal: React.FC<AdminLoginModalProps> = ({ isOpen, onClos
             <Lock className="w-5 h-5" />
           </div>
           <div>
-            <h3 className="font-serif text-2xl text-[#111111] tracking-tight">
+            <h3 id="admin-login-title" className="font-serif text-2xl text-[#111111] tracking-tight">
               Acesso Administrativo
             </h3>
             <p className="text-xs text-[#666666] font-sans">
@@ -77,13 +89,11 @@ export const AdminLoginModal: React.FC<AdminLoginModalProps> = ({ isOpen, onClos
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="Digite sua senha..."
+                autoComplete="current-password"
                 className="w-full pl-10 pr-4 py-2.5 bg-[#ffffff] border border-[#111111] text-[#111111] text-sm focus:outline-none focus:ring-1 focus:ring-[#C2410C] font-mono text-xs"
                 autoFocus
               />
               <KeyRound className="w-4 h-4 text-[#888888] absolute left-3.5 top-3" />
-            </div>
-            <div className="flex items-center justify-between mt-1 text-[11px] text-[#777777] font-mono">
-              <span>Senha padrão: <code className="text-[#C2410C] font-bold">admin</code> ou <code className="text-[#C2410C] font-bold">admin2026</code></span>
             </div>
           </div>
 

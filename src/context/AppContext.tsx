@@ -83,12 +83,20 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     name?: string;
   } | undefined>(undefined);
 
-  // Check stored admin session
+  // Restore the server-validated admin session, if one exists.
   useEffect(() => {
-    const session = localStorage.getItem('admin_authenticated');
-    if (session === 'true') {
-      setIsAdmin(true);
-    }
+    let active = true;
+    fetch('/api/admin/auth/session')
+      .then((response) => response.json())
+      .then((session) => {
+        if (active) setIsAdmin(session.authenticated === true);
+      })
+      .catch(() => {
+        if (active) setIsAdmin(false);
+      });
+    return () => {
+      active = false;
+    };
   }, []);
 
   // Parse URL hash or path on load
@@ -155,10 +163,10 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     setToasts((prev) => prev.filter((t) => t.id !== id));
   };
 
-  const fetchData = async () => {
+  const fetchData = async (adminMode = isAdmin) => {
     try {
       setIsLoading(true);
-      const url = isAdmin ? '/api/admin/data' : '/api/data';
+      const url = adminMode ? '/api/admin/data' : '/api/data';
       const res = await fetch(url);
       if (res.ok) {
         const json = await res.json();
@@ -167,6 +175,9 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
           ...json,
           settings: { ...prev.settings, ...(json.settings || {}) }
         }));
+      } else if (res.status === 401 && adminMode) {
+        setIsAdmin(false);
+        showToast('Sua sessão administrativa expirou.', 'info');
       }
     } catch (err) {
       console.error('Error fetching data from API:', err);
@@ -176,7 +187,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   };
 
   useEffect(() => {
-    fetchData();
+    void fetchData(isAdmin);
   }, [isAdmin]);
 
   const loginAdmin = async (password: string): Promise<boolean> => {
@@ -188,9 +199,8 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       });
       if (res.ok) {
         setIsAdmin(true);
-        localStorage.setItem('admin_authenticated', 'true');
         showToast('Acesso administrativo autorizado.', 'success');
-        fetchData();
+        await fetchData(true);
         return true;
       } else {
         const err = await res.json();
@@ -204,10 +214,10 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   };
 
   const logoutAdmin = () => {
+    void fetch('/api/admin/auth/logout', { method: 'POST' });
     setIsAdmin(false);
-    localStorage.removeItem('admin_authenticated');
     showToast('Sessão administrativa encerrada.', 'info');
-    fetchData();
+    void fetchData(false);
   };
 
   const submitLead = async (leadData: Partial<SponsorshipLead>): Promise<{ success: boolean; error?: string }> => {
@@ -260,17 +270,18 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
 
   const syncAdminData = async (updatedState: Partial<AppStateData>): Promise<boolean> => {
     try {
-      const merged = { ...data, ...updatedState };
-      setData(merged);
       const res = await fetch('/api/admin/sync', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(merged)
+        body: JSON.stringify(updatedState)
       });
       if (res.ok) {
+        const json = await res.json();
+        setData(json.state);
         showToast('Alterações salvas e publicadas com sucesso!', 'success');
         return true;
       }
+      if (res.status === 401) setIsAdmin(false);
       showToast('Erro ao sincronizar com o servidor.', 'error');
       return false;
     } catch (err) {
@@ -306,6 +317,10 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   };
 
   const openLeadModal = (target?: { type: 'COMPETITION' | 'TEAM' | 'INSTITUTIONAL'; id?: string; name?: string }) => {
+    if (!data.settings.allowPublicLeads) {
+      showToast('O envio de propostas está temporariamente desativado.', 'info');
+      return;
+    }
     setLeadModalInitialTarget(target);
     setShowLeadModal(true);
   };
@@ -338,7 +353,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         clearAllData,
         showToast,
         removeToast,
-        refreshData: fetchData
+        refreshData: () => fetchData(isAdmin)
       }}
     >
       {children}

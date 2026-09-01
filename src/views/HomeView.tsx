@@ -7,24 +7,17 @@ import {
   MapPin,
   Users,
   Trophy,
-  Quote,
-  ShieldCheck,
   CheckCircle2,
-  Sparkles,
   Bot,
   Layers,
-  GraduationCap,
   HeartHandshake,
-  Cpu,
   Compass,
   Lightbulb,
   Globe2,
-  Smile,
-  Flame,
-  ExternalLink
+  Smile
 } from 'lucide-react';
 import { CompetitionStatus } from '../types';
-import { FirstLogo, SenaiLogo, FirstSenaiCoBrand } from '../components/Logos';
+import { FirstLogo, SenaiLogo } from '../components/Logos';
 
 export const HomeView: React.FC = () => {
   const { data, navigateTo, openLeadModal } = useApp();
@@ -36,6 +29,7 @@ export const HomeView: React.FC = () => {
   const verifiedMetrics = data.metrics.filter((m) => m.publishStatus === 'published' && m.verified);
   const activeSponsors = data.sponsors.filter((s) => s.active);
   const latestResults = data.results.filter((r) => r.publishStatus === 'published').slice(0, 3);
+  const featuredCompetition = publishedCompetitions[0];
 
   const getStatusBadge = (status: CompetitionStatus) => {
     switch (status) {
@@ -71,43 +65,43 @@ export const HomeView: React.FC = () => {
   const programs = [
     {
       id: 'fll',
-      tag: 'FLL® (Idades 4–16)',
+      tag: 'FLL®',
       title: 'FIRST® LEGO® League',
-      age: 'Educação Infantil ao Fundamental II',
-      description: 'As crianças desenvolvem habilidades de pensamento crítico e programação com LEGO® Education (Discover, Explore e Challenge), resolvendo desafios científicos reais da sociedade.',
+      age: 'Aprendizagem com LEGO® Education',
+      description: 'Programa de robótica educacional com atividades de pesquisa, projeto, construção e programação em equipe.',
       color: 'from-amber-500 to-orange-600',
       badgeColor: 'bg-amber-100 text-amber-900 border-amber-300',
-      features: ['Kits LEGO® SPIKE™ Prime', 'Projeto de Inovação Científica', 'Missões de Mesa Autônomas', 'Gracious Professionalism®']
+      features: ['Construção e programação', 'Projeto de inovação', 'Trabalho em equipe', 'Resolução de problemas']
     },
     {
       id: 'ftc',
-      tag: 'FTC® (Idades 12–18)',
+      tag: 'FTC®',
       title: 'FIRST® Tech Challenge',
-      age: '7º ano ao Ensino Médio',
-      description: 'Equipes de até 15 estudantes projetam, constroem e programam robôs de até 19kg em plataformas de alumínio, usando linguagem Java e sensores avançados para disputas 2v2.',
+      age: 'Desafio intermediário de engenharia',
+      description: 'Equipes projetam, constroem e programam robôs para desafios de arena, documentando decisões técnicas e aprendizados.',
       color: 'from-blue-600 to-cyan-700',
       badgeColor: 'bg-blue-100 text-blue-900 border-blue-300',
-      features: ['Robôs até 19kg (42 lbs)', 'Programação em Java / Android', 'Alianças 2v2 em Arena 3,6m', 'Caderno de Engenharia (Engineering Notebook)']
+      features: ['Projeto mecânico', 'Programação e sensores', 'Estratégia de arena', 'Documentação de engenharia']
     },
     {
       id: 'frc',
-      tag: 'FRC® (Idades 14–18)',
+      tag: 'FRC®',
       title: 'FIRST® Robotics Competition',
-      age: 'Ensino Médio e Técnico',
-      description: 'O ápice da robótica estudantil mundial. Apelidado de "o esporte supremo da mente", reúne robôs de porte industrial de 57kg construídos em 6 semanas com regras e componentes profissionais.',
+      age: 'Robótica de maior escala',
+      description: 'Equipes multidisciplinares desenvolvem robôs de maior porte para desafios anuais, combinando engenharia, programação, gestão e comunicação.',
       color: 'from-red-600 to-rose-700',
       badgeColor: 'bg-red-100 text-red-900 border-red-300',
-      features: ['Robôs Industriais até 57kg (125 lbs)', 'Transmissão Swerve Drive & Pneumática', 'Alianças 3v3 em Arena Oficial', 'Vagas para Houston World Championship']
+      features: ['Engenharia integrada', 'Programação e automação', 'Estratégia e cooperação', 'Gestão de equipe']
     },
     {
       id: 'alumni',
       tag: 'Alumni & Bolsas',
       title: 'FIRST® Alumni & Bolsas de Estudo',
       age: 'Universitários e Profissionais',
-      description: 'Uma rede global de estudantes com acesso a mais de US$ 80 milhões em oportunidades de bolsas universitárias em faculdades líderes mundiais e programas de estágio no Vale do Silício e indústria aeroespacial.',
+      description: 'Uma rede de ex-participantes que mantém conexões com educação, mentoria e oportunidades profissionais divulgadas pelos canais oficiais.',
       color: 'from-emerald-600 to-teal-700',
       badgeColor: 'bg-emerald-100 text-emerald-900 border-emerald-300',
-      features: ['Mais de US$ 80M em Bolsas', 'Parcerias com MIT, Stanford, USP', 'Estágios em Fortune 500', 'Mentoria Contínua']
+      features: ['Comunidade de ex-participantes', 'Mentoria', 'Oportunidades educacionais', 'Desenvolvimento profissional']
     }
   ];
 
@@ -137,7 +131,7 @@ export const HomeView: React.FC = () => {
                 <div className="flex flex-col text-left">
                   <SenaiLogo className="h-4 sm:h-5 w-auto" variant="white" />
                   <span className="text-[8px] sm:text-[9px] font-extrabold uppercase tracking-wider text-[#78BE20]">
-                    Operador Oficial Brasil
+                    Projeto independente
                   </span>
                 </div>
               </div>
@@ -156,7 +150,7 @@ export const HomeView: React.FC = () => {
                 id="hero-description"
                 className="text-base sm:text-lg text-slate-300 max-w-2xl leading-relaxed mx-auto lg:mx-0 font-sans"
               >
-                A <strong className="text-white font-bold">FIRST®</strong> (For Inspiration and Recognition of Science and Technology) é uma comunidade global de robótica que, em parceria com o <strong className="text-[#78BE20] font-bold">SENAI</strong>, desenvolve estudantes dos 4 aos 18 anos através de desafios práticos de engenharia e inovação industrial.
+                Um portal independente para acompanhar competições de robótica, conhecer equipes e aproximar projetos de possíveis patrocinadores. Informações institucionais devem ser confirmadas nos canais oficiais da <strong className="text-white font-bold">FIRST®</strong> e do <strong className="text-[#78BE20] font-bold">SENAI</strong>.
               </p>
 
               <div className="flex flex-wrap items-center justify-center lg:justify-start gap-4 pt-2">
@@ -204,53 +198,52 @@ export const HomeView: React.FC = () => {
                 <div className="flex items-center justify-between border-b border-white/10 pb-3 mb-4">
                   <span className="text-[11px] uppercase tracking-wider text-[#00A3E0] font-bold flex items-center gap-1.5">
                     <Bot className="w-4 h-4 text-[#78BE20]" />
-                    Próximo Torneio em Destaque
+                    Competição em destaque
                   </span>
-                  <span className="px-2.5 py-0.5 rounded-full bg-[#ED1C24]/20 border border-[#ED1C24]/40 text-[#ff8085] text-[10px] font-bold">
-                    AO VIVO / ARENA
-                  </span>
+                  {featuredCompetition && getStatusBadge(featuredCompetition.status)}
                 </div>
-
-                <h3 className="font-heading font-bold text-xl text-white mb-2">
-                  FIRST® Robotics Competition - Regional Brasil 2026
-                </h3>
-                <p className="text-xs text-slate-300 leading-relaxed mb-4">
-                  Arena SESI / Ginásio Ibirapuera, São Paulo. 48 equipes com robôs industriais de 57kg em alianças 3v3 disputando vagas para Houston.
-                </p>
-
-                <div className="grid grid-cols-2 gap-2 text-xs bg-black/20 p-3 rounded-xl mb-4 border border-white/5">
-                  <div>
-                    <span className="text-slate-400 block text-[10px] uppercase">Data:</span>
-                    <span className="font-semibold text-white">12 a 15 de Março de 2026</span>
+                {featuredCompetition ? (
+                  <>
+                    <h3 className="font-heading font-bold text-xl text-white mb-2">{featuredCompetition.name}</h3>
+                    <p className="text-xs text-slate-300 leading-relaxed mb-4">
+                      {featuredCompetition.description || 'Consulte os detalhes cadastrados desta competição.'}
+                    </p>
+                    <div className="grid grid-cols-2 gap-2 text-xs bg-black/20 p-3 rounded-xl mb-4 border border-white/5">
+                      <div>
+                        <span className="text-slate-400 block text-[10px] uppercase">Data:</span>
+                        <span className="font-semibold text-white">{featuredCompetition.startDate || 'A confirmar'}</span>
+                      </div>
+                      <div>
+                        <span className="text-slate-400 block text-[10px] uppercase">Modalidade:</span>
+                        <span className="font-semibold text-[#00A3E0]">{featuredCompetition.modality}</span>
+                      </div>
+                    </div>
+                    <button
+                      onClick={() => navigateTo('competition-detail', featuredCompetition.slug || featuredCompetition.id)}
+                      className="w-full py-2.5 bg-white text-[#002B49] hover:bg-slate-100 rounded-lg text-xs font-bold text-center transition-all flex items-center justify-center gap-2"
+                    >
+                      <span>Ver detalhes</span>
+                      <ArrowRight className="w-3.5 h-3.5" />
+                    </button>
+                  </>
+                ) : (
+                  <div className="py-6 text-sm text-slate-300">
+                    Nenhuma competição verificada foi publicada ainda.
                   </div>
-                  <div>
-                    <span className="text-slate-400 block text-[10px] uppercase">Modalidade:</span>
-                    <span className="font-semibold text-[#00A3E0]">FRC® 57kg</span>
-                  </div>
-                </div>
-
-                <div className="flex items-center justify-between gap-3">
-                  <button
-                    onClick={() => navigateTo('competition-detail', 'first-robotics-competition-regional-brasil-2026')}
-                    className="w-full py-2.5 bg-white text-[#002B49] hover:bg-slate-100 rounded-lg text-xs font-bold text-center transition-all flex items-center justify-center gap-2"
-                  >
-                    <span>Ver Detalhes do Torneio</span>
-                    <ArrowRight className="w-3.5 h-3.5" />
-                  </button>
-                </div>
+                )}
               </div>
 
-              {/* Founder Quote Card */}
+              {/* Project positioning card */}
               <div className="bg-gradient-to-r from-[#002B49]/80 to-[#001A2E]/80 border border-white/10 rounded-2xl p-5 text-slate-300 text-xs flex items-center gap-4">
                 <div className="w-12 h-12 rounded-full bg-[#0066B2] text-white flex items-center justify-center shrink-0 font-heading font-black text-lg">
                   FIRST
                 </div>
                 <div>
-                  <p className="italic text-slate-200">
-                    "Não usamos jovens para construir robôs. Usamos robôs para construir jovens."
+                  <p className="text-slate-200">
+                    Robótica como ferramenta de aprendizagem, trabalho em equipe e inovação.
                   </p>
                   <span className="text-[11px] font-semibold text-[#00A3E0] mt-1 block">
-                    — Dean Kamen, Fundador da FIRST®
+                    Conteúdo educacional e informativo
                   </span>
                 </div>
               </div>
@@ -264,49 +257,30 @@ export const HomeView: React.FC = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center max-w-2xl mx-auto mb-10">
             <span className="text-xs font-bold uppercase tracking-wider text-[#0066B2]">
-              Impacto Comprovado
+              Indicadores publicados
             </span>
             <h2 className="font-heading text-2xl sm:text-3xl font-black text-[#002B49] mt-1">
               O Alcance Global da FIRST®
             </h2>
             <p className="text-xs sm:text-sm text-slate-600 mt-2">
-              Mais de três décadas transformando a educação científica mundial com números auditados e resultados permanentes na vida dos estudantes.
+              Somente dados marcados como verificados pela equipe responsável aparecem nesta área.
             </p>
           </div>
 
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
-            <div className="bg-slate-50 border border-slate-200 rounded-2xl p-6 text-center hover:border-[#0066B2] transition-colors shadow-xs">
-              <div className="text-3xl sm:text-4xl font-heading font-black text-[#0066B2] mb-1">
-                +679.000
-              </div>
-              <span className="text-xs sm:text-sm font-bold text-[#002B49] block">Estudantes Impactados</span>
-              <span className="text-[11px] text-slate-500">Participantes ativos por temporada</span>
+          {verifiedMetrics.length > 0 ? (
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
+              {verifiedMetrics.slice(0, 4).map((metric) => (
+                <div key={metric.id} className="bg-slate-50 border border-slate-200 rounded-2xl p-6 text-center hover:border-[#0066B2] transition-colors shadow-xs">
+                  <div className="text-3xl sm:text-4xl font-heading font-black text-[#0066B2] mb-1">
+                    {metric.value}{metric.unit || ''}
+                  </div>
+                  <span className="text-xs sm:text-sm font-bold text-[#002B49] block">{metric.label}</span>
+                </div>
+              ))}
             </div>
-
-            <div className="bg-slate-50 border border-slate-200 rounded-2xl p-6 text-center hover:border-[#78BE20] transition-colors shadow-xs">
-              <div className="text-3xl sm:text-4xl font-heading font-black text-[#78BE20] mb-1">
-                +200.000
-              </div>
-              <span className="text-xs sm:text-sm font-bold text-[#002B49] block">Mentores & Voluntários</span>
-              <span className="text-[11px] text-slate-500">Engenheiros e educadores dedicados</span>
-            </div>
-
-            <div className="bg-slate-50 border border-slate-200 rounded-2xl p-6 text-center hover:border-[#ED1C24] transition-colors shadow-xs">
-              <div className="text-3xl sm:text-4xl font-heading font-black text-[#ED1C24] mb-1">
-                +110
-              </div>
-              <span className="text-xs sm:text-sm font-bold text-[#002B49] block">Países Conectados</span>
-              <span className="text-[11px] text-slate-500">Comunidade global de inovação</span>
-            </div>
-
-            <div className="bg-slate-50 border border-slate-200 rounded-2xl p-6 text-center hover:border-[#00A3E0] transition-colors shadow-xs">
-              <div className="text-3xl sm:text-4xl font-heading font-black text-[#00A3E0] mb-1">
-                US$ 80M+
-              </div>
-              <span className="text-xs sm:text-sm font-bold text-[#002B49] block">Bolsas Universitárias</span>
-              <span className="text-[11px] text-slate-500">Oportunidades exclusivas para Alumni</span>
-            </div>
-          </div>
+          ) : (
+            <p className="text-center text-sm text-slate-500">Nenhum indicador verificado foi publicado.</p>
+          )}
         </div>
       </section>
 
@@ -579,7 +553,7 @@ export const HomeView: React.FC = () => {
                       </div>
                       <div className="flex items-center gap-2">
                         <MapPin className="w-3.5 h-3.5 text-[#0066B2]" />
-                        <span>{comp.city || 'Arena Oficial'}</span>
+                        <span>{comp.city || 'Local não informado'}</span>
                       </div>
                       <div className="flex items-center gap-2">
                         <Users className="w-3.5 h-3.5 text-[#0066B2]" />
@@ -697,22 +671,22 @@ export const HomeView: React.FC = () => {
               </div>
               <div className="space-y-1">
                 <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 bg-[#78BE20]/20 text-[#78BE20] text-[10px] font-bold uppercase tracking-wider rounded-full">
-                  <span>Parceiro Estratégico & Operador Nacional</span>
+                  <span>Referências educacionais</span>
                 </div>
                 <h3 className="font-heading text-xl font-bold text-white">
                   SENAI: Formando a Indústria 4.0 no Brasil
                 </h3>
                 <p className="text-xs text-slate-300 max-w-xl">
-                  O Serviço Nacional de Aprendizagem Industrial é o operador oficial das temporadas FIRST® no Brasil, integrando robótica competitiva, formação profissional e infraestrutura técnica de ponta.
+                  Este projeto reúne conteúdos sobre robótica educacional. Relações institucionais e calendários devem ser confirmados diretamente nos canais oficiais das organizações citadas.
                 </p>
               </div>
             </div>
 
             <button
-              onClick={() => openLeadModal({ type: 'INSTITUTIONAL', name: 'Parceria SENAI / FIRST' })}
+              onClick={() => navigateTo('sobre')}
               className="px-5 py-2.5 bg-[#00884A] hover:bg-[#00703C] text-white text-xs font-bold uppercase tracking-wider rounded-xl transition-all shadow-md shrink-0"
             >
-              Conhecer a Aliança
+              Entender o projeto
             </button>
           </div>
 

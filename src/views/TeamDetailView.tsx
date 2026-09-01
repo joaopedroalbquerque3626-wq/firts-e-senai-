@@ -93,17 +93,17 @@ export const TeamDetailView: React.FC = () => {
                   </div>
                 ) : (
                   <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-xl bg-[#002B49] text-white flex items-center justify-center font-heading font-black text-2xl shadow-md -mt-16 sm:-mt-20 relative z-10">
-                    {team.teamNumber || team.name.substring(0, 2).toUpperCase()}
+                    {team.name.substring(0, 2).toUpperCase()}
                   </div>
                 )}
 
                 <div>
                   <div className="flex flex-wrap items-center gap-2 mb-2">
                     <span className="px-2.5 py-0.5 bg-[#002B49] text-white text-xs font-mono font-bold uppercase rounded">
-                      {team.teamNumber || '#0000'}
+                      Equipe participante
                     </span>
                     <span className="px-2.5 py-0.5 bg-blue-50 text-[#0066B2] text-xs font-bold uppercase rounded border border-blue-200">
-                      {team.division || team.modality}
+                      {team.modality}
                     </span>
                     {team.location && (
                       <span className="text-xs text-slate-500 flex items-center gap-1 font-medium">
@@ -123,7 +123,7 @@ export const TeamDetailView: React.FC = () => {
                 <div className="sm:self-center shrink-0">
                   <button
                     id="btn-sponsor-this-team-hero"
-                    onClick={() => openLeadModal(undefined, undefined, team.id, team.name)}
+                    onClick={() => openLeadModal({ type: 'TEAM', id: team.id, name: team.name })}
                     className="px-6 py-3 bg-[#ED1C24] hover:bg-[#C91319] text-white text-xs font-bold uppercase tracking-wider rounded-lg shadow-sm hover:shadow transition-all flex items-center gap-2"
                   >
                     <span>Patrocinar Esta Equipe</span>
@@ -134,29 +134,29 @@ export const TeamDetailView: React.FC = () => {
             </div>
 
             {/* Social & Contact Links */}
-            {(team.instagram || team.website || team.contactEmail) && (
+            {(team.officialLinks?.instagram || team.officialLinks?.website) && (
               <div className="flex flex-wrap items-center gap-4 pt-6 mt-6 border-t border-slate-100 text-xs">
-                {team.instagram && (
+                {team.officialLinks?.instagram && (
                   <a
-                    href={`https://instagram.com/${team.instagram.replace('@', '')}`}
+                    href={team.officialLinks.instagram}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="flex items-center gap-1.5 text-slate-600 hover:text-[#0066B2] font-medium"
                   >
                     <Instagram className="w-4 h-4 text-pink-600" />
-                    <span>@{team.instagram.replace('@', '')}</span>
+                    <span>Instagram da equipe</span>
                   </a>
                 )}
 
-                {team.website && (
+                {team.officialLinks?.website && (
                   <a
-                    href={team.website}
+                    href={team.officialLinks.website}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="flex items-center gap-1.5 text-slate-600 hover:text-[#0066B2] font-medium"
                   >
                     <Globe className="w-4 h-4 text-[#0066B2]" />
-                    <span>{team.website.replace(/^https?:\/\//, '')}</span>
+                    <span>{team.officialLinks.website.replace(/^https?:\/\//, '')}</span>
                   </a>
                 )}
               </div>
@@ -170,8 +170,7 @@ export const TeamDetailView: React.FC = () => {
             História da Equipe & Filosofia Gracious Professionalism®
           </h2>
           <p className="text-sm text-slate-700 leading-relaxed">
-            {team.historyBio ||
-              'Equipe ativa no ecossistema FIRST® Brasil, dedicada à capacitação de jovens estudantes em robótica avançada, engenharia, inovação social e liderança colaborativa.'}
+            {team.historyBio || 'Descrição da equipe ainda não informada.'}
           </p>
         </div>
 
@@ -227,9 +226,6 @@ export const TeamDetailView: React.FC = () => {
                   </h4>
                   {ach.competition && (
                     <div className="text-xs text-slate-500">{ach.competition}</div>
-                  )}
-                  {ach.description && (
-                    <p className="text-xs text-slate-600 pt-1">{ach.description}</p>
                   )}
                 </div>
               ))}

@@ -1,17 +1,50 @@
-import express, { Request, Response } from 'express';
+import 'dotenv/config';
+import express, { NextFunction, Request, Response } from 'express';
 import path from 'path';
 import fs from 'fs';
+import { createHmac, randomUUID, timingSafeEqual } from 'crypto';
 import { createServer as createViteServer } from 'vite';
 import { AppStateData, SponsorshipLead, ContactMessage } from './src/types.js';
 
 const app = express();
-const PORT = 3000;
-const DATA_DIR = path.join(process.cwd(), 'data');
+const PORT = Number.parseInt(process.env.PORT || '3000', 10);
+const DATA_DIR = process.env.DATA_DIR
+  ? path.resolve(process.env.DATA_DIR)
+  : path.join(process.cwd(), 'data');
 const DATA_FILE = path.join(DATA_DIR, 'store.json');
+const IS_PRODUCTION = process.env.NODE_ENV === 'production';
+const ADMIN_SECRET = process.env.ADMIN_SECRET?.trim() || (IS_PRODUCTION ? '' : 'admin2026');
+const ADMIN_COOKIE = 'firts_admin_session';
+const SESSION_TTL_MS = 8 * 60 * 60 * 1000;
+const TRUST_PROXY = process.env.TRUST_PROXY === '1';
 
-app.use(express.json({ limit: '10mb' }));
+if (!Number.isFinite(PORT) || PORT <= 0 || PORT > 65535) {
+  throw new Error('PORT deve ser um número válido entre 1 e 65535.');
+}
 
-// Initial baseline state based on firstinspires.org
+if (!ADMIN_SECRET) {
+  throw new Error('ADMIN_SECRET é obrigatório em produção. Configure uma senha forte no ambiente.');
+}
+if (IS_PRODUCTION && ADMIN_SECRET.length < 16) {
+  throw new Error('ADMIN_SECRET deve ter pelo menos 16 caracteres em produção.');
+}
+
+app.disable('x-powered-by');
+if (TRUST_PROXY) app.set('trust proxy', 1);
+app.use((_req, res, next) => {
+  res.setHeader('X-Content-Type-Options', 'nosniff');
+  res.setHeader('X-Frame-Options', 'DENY');
+  res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
+  res.setHeader('Permissions-Policy', 'camera=(), microphone=(), geolocation=()');
+  res.setHeader(
+    'Content-Security-Policy',
+    "default-src 'self'; img-src 'self' https: data:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; script-src 'self'; connect-src 'self'; frame-ancestors 'none'; base-uri 'self'; form-action 'self'"
+  );
+  next();
+});
+app.use(express.json({ limit: '256kb' }));
+
+// Neutral initial state. Verified content must be entered through the admin panel.
 const initialDefaultState: AppStateData = {
   competitions: [],
   teams: [],
@@ -22,17 +55,15 @@ const initialDefaultState: AppStateData = {
   stories: [],
   metrics: [],
   settings: {
-    platformName: 'FIRST® Inspires',
-    tagline: 'More Than Robots® — Preparando jovens para o futuro através de Ciência, Tecnologia e Inovação (STEM)',
-    missionText: 'Inspirar jovens a se tornarem líderes e inovadores em ciência e tecnologia, desenvolvendo habilidades de engenharia, autoconfiança, liderança e cooperação através dos programas FIRST® LEGO® League, FIRST® Tech Challenge e FIRST® Robotics Competition.',
-    aboutText: 'Fundada em 1989 pelo inventor Dean Kamen e pelo Dr. Woodie Flowers, a FIRST® (For Inspiration and Recognition of Science and Technology) é uma comunidade global de robótica que impacta anualmente mais de 679.000 jovens em mais de 110 países.',
-    organizationName: 'FIRST® Inspires / FIRST® Brasil (Parceria SESI SENAI)',
-    officialEmail: 'contato@firstinspires.org.br',
-    officialPhone: '+55 (11) 3322-0000',
-    officialAddress: 'São Paulo, SP - Brasil | Manchester, NH - USA',
+    platformName: 'Portal de Competições e Patrocínio',
+    tagline: 'Acompanhe competições, conheça equipes e crie oportunidades de patrocínio.',
+    missionText: 'Conectar competições, equipes, apoiadores e patrocinadores em um ambiente claro e confiável.',
+    aboutText: '',
+    organizationName: '',
+    officialEmail: '',
+    officialPhone: '',
+    officialAddress: '',
     socialLinks: {
-      instagram: 'https://instagram.com/first_official',
-      youtube: 'https://youtube.com/@FIRSTWorldTube',
       website: 'https://www.firstinspires.org'
     },
     allowPublicLeads: true,
@@ -62,11 +93,124 @@ function loadState(): AppStateData {
   return initialDefaultState;
 }
 
-function saveState(state: AppStateData) {
+function saveState(state: AppStateData): boolean {
+  const tempFile = `${DATA_FILE}.${process.pid}.${Date.now()}.tmp`;
   try {
-    fs.writeFileSync(DATA_FILE, JSON.stringify(state, null, 2), 'utf-8');
+    fs.writeFileSync(tempFile, JSON.stringify(state, null, 2), { encoding: 'utf-8', mode: 0o600 });
+    fs.renameSync(tempFile, DATA_FILE);
+    return true;
   } catch (error) {
     console.error('Error saving state to disk:', error);
+    try {
+      if (fs.existsSync(tempFile)) fs.unlinkSync(tempFile);
+    } catch {
+      // Best effort cleanup only.
+    }
+    return false;
+  }
+}
+
+interface RateBucket {
+  count: number;
+  resetAt: number;
+}
+
+const rateBuckets = new Map<string, RateBucket>();
+
+function rateLimit(scope: string, max: number, windowMs: number) {
+  return (req: Request, res: Response, next: NextFunction) => {
+    const now = Date.now();
+    const key = `${scope}:${req.ip || req.socket.remoteAddress || 'unknown'}`;
+    const current = rateBuckets.get(key);
+
+    if (!current || current.resetAt <= now) {
+      rateBuckets.set(key, { count: 1, resetAt: now + windowMs });
+      next();
+      return;
+    }
+
+    if (current.count >= max) {
+      res.setHeader('Retry-After', Math.ceil((current.resetAt - now) / 1000));
+      res.status(429).json({ error: 'Muitas tentativas. Aguarde e tente novamente.' });
+      return;
+    }
+
+    current.count += 1;
+    next();
+  };
+}
+
+function getCookie(req: Request, name: string): string | undefined {
+  const cookieHeader = req.headers.cookie;
+  if (!cookieHeader) return undefined;
+
+  for (const item of cookieHeader.split(';')) {
+    const [rawKey, ...rawValue] = item.trim().split('=');
+    if (rawKey === name) return decodeURIComponent(rawValue.join('='));
+  }
+  return undefined;
+}
+
+function signSession(payload: string): string {
+  return createHmac('sha256', ADMIN_SECRET).update(payload).digest('base64url');
+}
+
+function createSessionToken(): string {
+  const payload = Buffer.from(
+    JSON.stringify({ exp: Date.now() + SESSION_TTL_MS, nonce: randomUUID() })
+  ).toString('base64url');
+  return `${payload}.${signSession(payload)}`;
+}
+
+function hasValidSession(req: Request): boolean {
+  const token = getCookie(req, ADMIN_COOKIE);
+  if (!token) return false;
+
+  const [payload, signature] = token.split('.');
+  if (!payload || !signature) return false;
+
+  const expected = Buffer.from(signSession(payload));
+  const received = Buffer.from(signature);
+  if (expected.length !== received.length || !timingSafeEqual(expected, received)) return false;
+
+  try {
+    const session = JSON.parse(Buffer.from(payload, 'base64url').toString('utf8')) as { exp?: number };
+    return typeof session.exp === 'number' && session.exp > Date.now();
+  } catch {
+    return false;
+  }
+}
+
+function requireAdmin(req: Request, res: Response, next: NextFunction) {
+  if (!hasValidSession(req)) {
+    res.status(401).json({ error: 'Sessão administrativa inválida ou expirada.' });
+    return;
+  }
+  next();
+}
+
+function secureStringEquals(left: string, right: string): boolean {
+  const leftBuffer = Buffer.from(left);
+  const rightBuffer = Buffer.from(right);
+  return leftBuffer.length === rightBuffer.length && timingSafeEqual(leftBuffer, rightBuffer);
+}
+
+function cleanText(value: unknown, maxLength: number): string {
+  return typeof value === 'string' ? value.trim().slice(0, maxLength) : '';
+}
+
+function isValidEmail(value: string): boolean {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value) && value.length <= 254;
+}
+
+function cleanHttpUrl(value: unknown): string | undefined {
+  const text = cleanText(value, 500);
+  if (!text) return undefined;
+  try {
+    const url = new URL(text);
+    return url.protocol === 'http:' || url.protocol === 'https:' ? url.toString() : undefined;
+  } catch {
+    return undefined;
   }
 }
 
@@ -92,7 +236,11 @@ app.get('/api/data', (_req: Request, res: Response) => {
 });
 
 // POST /api/leads - Public sponsorship inquiry submission
-app.post('/api/leads', (req: Request, res: Response) => {
+app.post('/api/leads', rateLimit('leads', 10, 60 * 60 * 1000), (req: Request, res: Response) => {
+  if (!db.settings.allowPublicLeads) {
+    return res.status(403).json({ error: 'O envio público de propostas está temporariamente desativado.' });
+  }
+
   const {
     companyName,
     contactName,
@@ -108,94 +256,179 @@ app.post('/api/leads', (req: Request, res: Response) => {
     privacyConsent
   } = req.body;
 
-  if (!companyName || !contactName || !email || !phone || !interestType || !message) {
+  const cleanCompanyName = cleanText(companyName, 120);
+  const cleanContactName = cleanText(contactName, 120);
+  const cleanEmail = cleanText(email, 254).toLowerCase();
+  const cleanPhone = cleanText(phone, 40);
+  const cleanMessage = cleanText(message, 4000);
+  const cleanWebsite = cleanHttpUrl(website);
+  const allowedInterestTypes = new Set([
+    'PATROCINAR_COMPETICAO',
+    'PATROCINAR_EQUIPE',
+    'PARCERIA_INSTITUCIONAL'
+  ]);
+
+  if (!cleanCompanyName || !cleanContactName || !cleanEmail || !cleanPhone || !cleanMessage) {
     return res.status(400).json({ error: 'Por favor, preencha todos os campos obrigatórios.' });
+  }
+  if (!isValidEmail(cleanEmail)) {
+    return res.status(400).json({ error: 'Informe um endereço de e-mail válido.' });
+  }
+  if (!allowedInterestTypes.has(String(interestType))) {
+    return res.status(400).json({ error: 'Tipo de interesse inválido.' });
+  }
+  if (website && !cleanWebsite) {
+    return res.status(400).json({ error: 'O site deve começar com http:// ou https://.' });
+  }
+  if (privacyConsent !== true) {
+    return res.status(400).json({ error: 'É necessário autorizar o uso dos dados para contato.' });
   }
 
   const newLead: SponsorshipLead = {
-    id: `lead_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`,
-    companyName: String(companyName).trim(),
-    contactName: String(contactName).trim(),
-    email: String(email).trim().toLowerCase(),
-    phone: String(phone).trim(),
-    website: website ? String(website).trim() : undefined,
-    interestType,
-    targetCompetitionId: targetCompetitionId || undefined,
-    targetTeamId: targetTeamId || undefined,
-    targetName: targetName ? String(targetName).trim() : undefined,
-    investmentRange: investmentRange ? String(investmentRange).trim() : undefined,
-    message: String(message).trim(),
-    privacyConsent: Boolean(privacyConsent),
+    id: `lead_${randomUUID()}`,
+    companyName: cleanCompanyName,
+    contactName: cleanContactName,
+    email: cleanEmail,
+    phone: cleanPhone,
+    website: cleanWebsite,
+    interestType: String(interestType) as SponsorshipLead['interestType'],
+    targetCompetitionId: cleanText(targetCompetitionId, 160) || undefined,
+    targetTeamId: cleanText(targetTeamId, 160) || undefined,
+    targetName: cleanText(targetName, 180) || undefined,
+    investmentRange: cleanText(investmentRange, 100) || undefined,
+    message: cleanMessage,
+    privacyConsent: true,
     status: 'NOVO',
     createdAt: new Date().toISOString()
   };
 
   db.leads.unshift(newLead);
-  saveState(db);
+  if (!saveState(db)) {
+    db.leads = db.leads.filter((lead) => lead.id !== newLead.id);
+    return res.status(500).json({ error: 'Não foi possível registrar a solicitação.' });
+  }
 
   return res.status(201).json({ success: true, message: 'Solicitação de patrocínio registrada com sucesso!', leadId: newLead.id });
 });
 
 // POST /api/contact - Public contact message submission
-app.post('/api/contact', (req: Request, res: Response) => {
-  const { name, email, phone, subject, message } = req.body;
+app.post('/api/contact', rateLimit('contact', 10, 60 * 60 * 1000), (req: Request, res: Response) => {
+  const { name, email, phone, subject, message, privacyConsent } = req.body;
+  const cleanName = cleanText(name, 120);
+  const cleanEmail = cleanText(email, 254).toLowerCase();
+  const cleanPhone = cleanText(phone, 40);
+  const cleanSubject = cleanText(subject, 180);
+  const cleanMessage = cleanText(message, 4000);
 
-  if (!name || !email || !subject || !message) {
+  if (!cleanName || !cleanEmail || !cleanSubject || !cleanMessage) {
     return res.status(400).json({ error: 'Por favor, preencha todos os campos obrigatórios.' });
+  }
+  if (!isValidEmail(cleanEmail)) {
+    return res.status(400).json({ error: 'Informe um endereço de e-mail válido.' });
+  }
+  if (privacyConsent !== true) {
+    return res.status(400).json({ error: 'É necessário autorizar o uso dos dados para contato.' });
   }
 
   const newContact: ContactMessage = {
-    id: `msg_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`,
-    name: String(name).trim(),
-    email: String(email).trim().toLowerCase(),
-    phone: phone ? String(phone).trim() : undefined,
-    subject: String(subject).trim(),
-    message: String(message).trim(),
+    id: `msg_${randomUUID()}`,
+    name: cleanName,
+    email: cleanEmail,
+    phone: cleanPhone || undefined,
+    subject: cleanSubject,
+    message: cleanMessage,
+    privacyConsent: true,
     read: false,
     createdAt: new Date().toISOString()
   };
 
   db.contactMessages.unshift(newContact);
-  saveState(db);
+  if (!saveState(db)) {
+    db.contactMessages = db.contactMessages.filter((contact) => contact.id !== newContact.id);
+    return res.status(500).json({ error: 'Não foi possível registrar a mensagem.' });
+  }
 
-  return res.status(201).json({ success: true, message: 'Mensagem enviada com sucesso para a coordenação da FIRST®!' });
+  return res.status(201).json({ success: true, message: 'Mensagem registrada com sucesso.' });
 });
 
 // ----------------------------------------------------
 // Admin API Endpoints
 // ----------------------------------------------------
 
-const ADMIN_SECRET = process.env.ADMIN_SECRET || 'admin2026';
-
-app.post('/api/admin/auth/login', (req: Request, res: Response) => {
-  const { password } = req.body;
-  if (!password || (password !== ADMIN_SECRET && password !== 'admin' && password !== 'first2026' && password !== 'competicao2026')) {
+app.post('/api/admin/auth/login', rateLimit('admin-login', 8, 15 * 60 * 1000), (req: Request, res: Response) => {
+  const password = cleanText(req.body?.password, 256);
+  if (!password || !secureStringEquals(password, ADMIN_SECRET)) {
     return res.status(401).json({ error: 'Senha de administração incorreta.' });
   }
-  return res.json({ success: true, token: 'authenticated_admin_session' });
+  res.cookie(ADMIN_COOKIE, createSessionToken(), {
+    httpOnly: true,
+    sameSite: 'strict',
+    secure: IS_PRODUCTION,
+    maxAge: SESSION_TTL_MS,
+    path: '/'
+  });
+  return res.json({ success: true });
+});
+
+app.get('/api/admin/auth/session', (req: Request, res: Response) => {
+  res.json({ authenticated: hasValidSession(req) });
+});
+
+app.post('/api/admin/auth/logout', (_req: Request, res: Response) => {
+  res.clearCookie(ADMIN_COOKIE, {
+    httpOnly: true,
+    sameSite: 'strict',
+    secure: IS_PRODUCTION,
+    path: '/'
+  });
+  res.status(204).send();
 });
 
 // GET /api/admin/data - Returns everything
-app.get('/api/admin/data', (_req: Request, res: Response) => {
+app.get('/api/admin/data', requireAdmin, (_req: Request, res: Response) => {
   res.json(db);
 });
 
 // Save complete or specific entity updates
-app.post('/api/admin/sync', (req: Request, res: Response) => {
+app.post('/api/admin/sync', requireAdmin, (req: Request, res: Response) => {
   const updatedData = req.body;
   if (!updatedData || typeof updatedData !== 'object') {
     return res.status(400).json({ error: 'Dados inválidos' });
   }
 
-  db = {
-    ...db,
-    ...updatedData,
-    settings: {
-      ...db.settings,
-      ...(updatedData.settings || {})
+  const allowedArrayKeys: Array<keyof AppStateData> = [
+    'competitions',
+    'teams',
+    'results',
+    'sponsors',
+    'opportunities',
+    'leads',
+    'stories',
+    'metrics',
+    'contactMessages'
+  ];
+  const nextDb: AppStateData = { ...db };
+
+  for (const key of allowedArrayKeys) {
+    if (key in updatedData) {
+      if (!Array.isArray(updatedData[key])) {
+        return res.status(400).json({ error: `O campo ${key} deve ser uma lista.` });
+      }
+      (nextDb[key] as unknown[]) = updatedData[key];
     }
-  };
-  saveState(db);
+  }
+
+  if ('settings' in updatedData) {
+    if (!updatedData.settings || typeof updatedData.settings !== 'object' || Array.isArray(updatedData.settings)) {
+      return res.status(400).json({ error: 'Configurações inválidas.' });
+    }
+    nextDb.settings = { ...db.settings, ...updatedData.settings };
+  }
+
+  if (!saveState(nextDb)) {
+    return res.status(500).json({ error: 'Não foi possível salvar as alterações.' });
+  }
+  db = nextDb;
   res.json({ success: true, state: db });
 });
 
@@ -688,16 +921,23 @@ const getFirstDataset = (): AppStateData => ({
   contactMessages: []
 });
 
-// Seed Verified Sample Real Data for Testing / Demonstration
-app.post('/api/admin/seed-sample', (_req: Request, res: Response) => {
-  db = getFirstDataset();
-  saveState(db);
-  res.json({ success: true, message: 'Dados oficiais da FIRST® carregados com sucesso!', state: db });
+// Optional fictional dataset for local layout testing only.
+app.post('/api/admin/seed-sample', requireAdmin, (_req: Request, res: Response) => {
+  const sampleState = getFirstDataset();
+  if (!saveState(sampleState)) {
+    return res.status(500).json({ error: 'Não foi possível carregar os dados demonstrativos.' });
+  }
+  db = sampleState;
+  return res.json({
+    success: true,
+    message: 'Dados demonstrativos carregados. Eles não devem ser publicados como dados oficiais.',
+    state: db
+  });
 });
 
 // Clear all data to test zero-data empty state
-app.post('/api/admin/clear-all', (_req: Request, res: Response) => {
-  db = {
+app.post('/api/admin/clear-all', requireAdmin, (_req: Request, res: Response) => {
+  const emptyState: AppStateData = {
     ...initialDefaultState,
     competitions: [],
     teams: [],
@@ -709,15 +949,12 @@ app.post('/api/admin/clear-all', (_req: Request, res: Response) => {
     metrics: [],
     contactMessages: []
   };
-  saveState(db);
-  res.json({ success: true, message: 'Todos os registros foram zerados. Estado vazio ativo.', state: db });
+  if (!saveState(emptyState)) {
+    return res.status(500).json({ error: 'Não foi possível limpar os dados.' });
+  }
+  db = emptyState;
+  return res.json({ success: true, message: 'Todos os registros foram removidos.', state: db });
 });
-
-// Auto-seed initial state if empty
-if (db.competitions.length === 0 && db.teams.length === 0) {
-  db = getFirstDataset();
-  saveState(db);
-}
 
 // ----------------------------------------------------
 // Setup Vite in Dev or Static in Prod
@@ -738,8 +975,11 @@ async function start() {
   }
 
   app.listen(PORT, '0.0.0.0', () => {
-    console.log(`FIRST Inspires Server running on port ${PORT}`);
+    console.log(`Servidor iniciado na porta ${PORT}`);
   });
 }
 
-start();
+start().catch((error) => {
+  console.error('Falha ao iniciar o servidor:', error);
+  process.exitCode = 1;
+});
