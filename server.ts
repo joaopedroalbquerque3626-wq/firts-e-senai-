@@ -835,7 +835,25 @@ const getFirstDataset = (): AppStateData => ({
       createdAt: new Date().toISOString()
     }
   ],
-  leads: [],
+  leads: [
+    {
+      id: 'lead_demo_1',
+      companyName: 'Empresa Exemplo (DEMO)',
+      contactName: 'Contato de Demonstração',
+      email: 'patrocinio@example.com',
+      phone: '(00) 00000-0000',
+      website: 'https://example.com/',
+      interestType: 'PATROCINAR_EQUIPE',
+      targetTeamId: 'team_1',
+      targetName: '#1771 - The Force Robotics',
+      investmentRange: 'Faixa demonstrativa',
+      message: 'Lead fictício criado apenas para demonstrar o funil de patrocínio no painel.',
+      privacyConsent: true,
+      status: 'NOVO',
+      notes: 'Dado fictício de apresentação.',
+      createdAt: new Date().toISOString()
+    }
+  ],
   stories: [
     {
       id: 'story_1',
@@ -903,14 +921,14 @@ const getFirstDataset = (): AppStateData => ({
     }
   ],
   settings: {
-    platformName: 'FIRST® Inspires',
-    tagline: 'More Than Robots® — Preparando jovens para o futuro através de Ciência, Tecnologia e Inovação (STEM)',
-    missionText: 'Inspirar jovens a se tornarem líderes e inovadores em ciência e tecnologia, desenvolvendo habilidades de engenharia, autoconfiança, liderança e cooperação através dos programas FIRST® LEGO® League, FIRST® Tech Challenge e FIRST® Robotics Competition.',
-    aboutText: 'Fundada em 1989 pelo inventor Dean Kamen e pelo Dr. Woodie Flowers, a FIRST® (For Inspiration and Recognition of Science and Technology) é uma comunidade global de robótica sem fins lucrativos que desenvolve jovens da Educação Infantil ao Ensino Médio com programas inovadores baseados em mentoria prática.',
-    organizationName: 'FIRST® Inspires / FIRST® Brasil (Parceria SESI SENAI)',
-    officialEmail: 'contato@firstinspires.org.br',
-    officialPhone: '+55 (11) 3322-0000',
-    officialAddress: 'São Paulo, SP - Brasil | Manchester, NH - USA',
+    platformName: 'FIRST & SENAI | Protótipo',
+    tagline: 'Competições, equipes e oportunidades de patrocínio em um só lugar.',
+    missionText: 'Demonstrar uma plataforma capaz de organizar competições, equipes, resultados e contatos de patrocinadores.',
+    aboutText: 'Protótipo acadêmico e demonstrativo. Os registros carregados automaticamente são fictícios e servem apenas para testar as funções do sistema.',
+    organizationName: 'Protótipo criado por João Pedro Albuquerque Montenegro',
+    officialEmail: '',
+    officialPhone: '',
+    officialAddress: '',
     socialLinks: {
       instagram: 'https://instagram.com/first_official',
       youtube: 'https://youtube.com/@FIRSTWorldTube',
@@ -918,8 +936,26 @@ const getFirstDataset = (): AppStateData => ({
     },
     allowPublicLeads: true
   },
-  contactMessages: []
+  contactMessages: [
+    {
+      id: 'msg_demo_1',
+      name: 'Visitante de Demonstração',
+      email: 'visitante@example.com',
+      phone: '(00) 00000-0000',
+      subject: 'Mensagem de teste do protótipo',
+      message: 'Esta mensagem fictícia demonstra como os contatos aparecem e podem ser gerenciados no painel.',
+      privacyConsent: true,
+      read: false,
+      createdAt: new Date().toISOString()
+    }
+  ]
 });
+
+// A fresh clone opens fully populated so every prototype flow can be demonstrated.
+if (!fs.existsSync(DATA_FILE)) {
+  const initialSampleState = getFirstDataset();
+  if (saveState(initialSampleState)) db = initialSampleState;
+}
 
 // Optional fictional dataset for local layout testing only.
 app.post('/api/admin/seed-sample', requireAdmin, (_req: Request, res: Response) => {

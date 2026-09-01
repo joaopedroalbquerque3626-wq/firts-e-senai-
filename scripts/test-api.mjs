@@ -44,6 +44,8 @@ try {
 
   const publicResponse = await fetch(`${baseUrl}/api/data`);
   assert.equal(publicResponse.status, 200);
+  const initialPublicData = await publicResponse.json();
+  assert.ok(initialPublicData.competitions.length > 0, 'O protótipo deve iniciar com dados demonstrativos.');
 
   const protectedResponse = await fetch(`${baseUrl}/api/admin/data`);
   assert.equal(protectedResponse.status, 401);
@@ -68,6 +70,9 @@ try {
     headers: { Cookie: cookie }
   });
   assert.equal(authenticatedResponse.status, 200);
+  const initialAdminData = await authenticatedResponse.json();
+  assert.ok(initialAdminData.leads.some((lead) => lead.id === 'lead_demo_1'));
+  assert.ok(initialAdminData.contactMessages.some((message) => message.id === 'msg_demo_1'));
 
   const rejectedContact = await fetch(`${baseUrl}/api/contact`, {
     method: 'POST',
@@ -98,7 +103,35 @@ try {
     headers: { Cookie: cookie }
   });
   const adminData = await adminDataResponse.json();
-  assert.equal(adminData.contactMessages.length, 1);
+  assert.equal(adminData.contactMessages.length, initialAdminData.contactMessages.length + 1);
+
+  const demoMessage = adminData.contactMessages.find((message) => message.id === 'msg_demo_1');
+  const markReadResponse = await fetch(`${baseUrl}/api/admin/sync`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', Cookie: cookie },
+    body: JSON.stringify({
+      contactMessages: adminData.contactMessages.map((message) =>
+        message.id === demoMessage.id ? { ...message, read: true } : message
+      )
+    })
+  });
+  assert.equal(markReadResponse.status, 200);
+
+  const clearResponse = await fetch(`${baseUrl}/api/admin/clear-all`, {
+    method: 'POST',
+    headers: { Cookie: cookie }
+  });
+  assert.equal(clearResponse.status, 200);
+  const emptyPublicData = await fetch(`${baseUrl}/api/data`).then((response) => response.json());
+  assert.equal(emptyPublicData.competitions.length, 0);
+
+  const restoreResponse = await fetch(`${baseUrl}/api/admin/seed-sample`, {
+    method: 'POST',
+    headers: { Cookie: cookie }
+  });
+  assert.equal(restoreResponse.status, 200);
+  const restoredPublicData = await fetch(`${baseUrl}/api/data`).then((response) => response.json());
+  assert.ok(restoredPublicData.competitions.length > 0);
 
   const logoutResponse = await fetch(`${baseUrl}/api/admin/auth/logout`, {
     method: 'POST',
@@ -106,7 +139,7 @@ try {
   });
   assert.equal(logoutResponse.status, 204);
 
-  console.log('API: autenticação, privacidade e persistência validadas.');
+  console.log('API: autenticação, privacidade, mensagens e dados demonstrativos validados.');
 } finally {
   server.kill('SIGTERM');
   await new Promise((resolve) => server.once('exit', resolve));

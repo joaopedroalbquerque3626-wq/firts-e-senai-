@@ -21,6 +21,8 @@ A aplicação fica disponível em `http://localhost:3000` por padrão.
 
 Antes de usar o painel, altere `ADMIN_SECRET` no arquivo `.env`. Em produção, a aplicação não inicia sem essa variável.
 
+Para apresentação local do protótipo, a senha padrão é `admin2026`.
+
 ## Comandos
 
 ```bash

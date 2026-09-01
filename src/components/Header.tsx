@@ -39,6 +39,9 @@ export const Header: React.FC<HeaderProps> = ({ onOpenAdminLogin }) => {
               <span className="w-2 h-2 rounded-full bg-[#78BE20] animate-pulse"></span>
               {data.settings.platformName}
             </span>
+            <span className="px-2 py-0.5 rounded border border-amber-400/50 bg-amber-400/10 text-amber-300 text-[9px] font-bold uppercase tracking-wider">
+              Protótipo • Dados demonstrativos
+            </span>
             <span className="hidden sm:inline-block text-slate-300 text-xs">|</span>
             <span className="hidden sm:inline-block text-slate-200 text-xs font-medium">
               Competições • Equipes • Resultados • Patrocínio

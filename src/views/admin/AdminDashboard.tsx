@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useApp } from '../../context/AppContext';
 import {
   Trophy,
@@ -92,6 +92,10 @@ export const AdminDashboard: React.FC = () => {
 
   // Site settings local state
   const [settingsForm, setSettingsForm] = useState(data.settings);
+
+  useEffect(() => {
+    setSettingsForm(data.settings);
+  }, [data.settings]);
 
   // ----------------------------------------------------
   // Handlers for Competitions
@@ -298,6 +302,20 @@ export const AdminDashboard: React.FC = () => {
   const handleSaveSettings = async (e: React.FormEvent) => {
     e.preventDefault();
     await syncAdminData({ settings: settingsForm });
+  };
+
+  const handleMarkMessageRead = async (id: string) => {
+    const updated = data.contactMessages.map((message) =>
+      message.id === id ? { ...message, read: true } : message
+    );
+    await syncAdminData({ contactMessages: updated });
+  };
+
+  const handleDeleteMessage = async (id: string) => {
+    if (!confirm('Deseja excluir esta mensagem?')) return;
+    await syncAdminData({
+      contactMessages: data.contactMessages.filter((message) => message.id !== id)
+    });
   };
 
   // Lead Counts
@@ -1745,7 +1763,7 @@ export const AdminDashboard: React.FC = () => {
         {activeTab === 'messages' && (
           <div className="space-y-6">
             <h2 className="font-serif text-2xl text-[#111111] border-b border-[#111111] pb-3">
-              Mensagens Oficiais de Contato ({data.contactMessages.length})
+              Mensagens de Contato ({data.contactMessages.length})
             </h2>
 
             {data.contactMessages.length === 0 ? (
@@ -1755,13 +1773,26 @@ export const AdminDashboard: React.FC = () => {
             ) : (
               <div className="space-y-4">
                 {data.contactMessages.map((msg) => (
-                  <div key={msg.id} className="p-5 bg-[#ffffff] border border-[#111111] shadow-[3px_3px_0px_#111111] space-y-2">
+                  <div key={msg.id} className={`p-5 bg-[#ffffff] border shadow-[3px_3px_0px_#111111] space-y-2 ${msg.read ? 'border-[#111111]' : 'border-[#C2410C]'}`}>
                     <div className="flex items-center justify-between">
-                      <h4 className="font-serif text-base text-[#111111]">{msg.subject}</h4>
+                      <div className="flex items-center gap-2">
+                        <h4 className="font-serif text-base text-[#111111]">{msg.subject}</h4>
+                        {!msg.read && <span className="px-2 py-0.5 bg-[#C2410C] text-white text-[9px] font-mono uppercase">Nova</span>}
+                      </div>
                       <span className="text-xs font-mono text-[#777777]">{new Date(msg.createdAt).toLocaleDateString('pt-BR')}</span>
                     </div>
                     <p className="text-xs text-[#666666] font-sans">De: <strong className="text-[#111111]">{msg.name}</strong> ({msg.email}) {msg.phone ? `• Tel: ${msg.phone}` : ''}</p>
                     <p className="text-xs text-[#444444] p-3 bg-[#fdfdfd] border border-[#e5e5e5] leading-relaxed font-sans">{msg.message}</p>
+                    <div className="flex items-center gap-2 pt-1">
+                      {!msg.read && (
+                        <button onClick={() => handleMarkMessageRead(msg.id)} className="px-3 py-1.5 border border-[#111111] text-[10px] font-mono uppercase hover:bg-[#111111] hover:text-white">
+                          Marcar como lida
+                        </button>
+                      )}
+                      <button onClick={() => handleDeleteMessage(msg.id)} className="px-3 py-1.5 border border-[#C2410C] text-[#C2410C] text-[10px] font-mono uppercase hover:bg-[#C2410C] hover:text-white">
+                        Excluir
+                      </button>
+                    </div>
                   </div>
                 ))}
               </div>
