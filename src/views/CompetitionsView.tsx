@@ -3,6 +3,7 @@ import { useApp } from '../context/AppContext';
 import { EmptyState } from '../components/EmptyState';
 import { Calendar, MapPin, Users, ArrowRight, Search, Trophy, ArrowUpRight, Bot, Sparkles } from 'lucide-react';
 import { CompetitionStatus } from '../types';
+import { formatDate } from '../utils/formatters';
 
 export const CompetitionsView: React.FC = () => {
   const { data, navigateTo, openLeadModal } = useApp();
@@ -80,11 +81,11 @@ export const CompetitionsView: React.FC = () => {
           </div>
 
           <h1 className="font-heading font-black text-3xl sm:text-5xl text-[#002B49] tracking-tight leading-tight">
-            Competições & Torneios Oficiais
+            Competições & Torneios
           </h1>
 
           <p className="text-sm sm:text-base text-slate-600 max-w-2xl mt-2 leading-relaxed">
-            Consulte o calendário de eventos regionais e nacionais (FRC®, FTC®, FLL®), regulamentos de arena (Game Manuals), alianças e credenciamento de equipes.
+            Explore o calendário demonstrativo, as modalidades, os regulamentos de referência e as equipes vinculadas a cada evento.
           </p>
         </div>
 
@@ -147,7 +148,7 @@ export const CompetitionsView: React.FC = () => {
         {publishedCompetitions.length === 0 ? (
           <EmptyState
             title="Nenhum torneio publicado no momento"
-            description="As informações oficiais de novos campeonatos e etapas estão sendo homologadas pela organização FIRST®."
+            description="Ainda não há competições publicadas. O administrador pode cadastrar um evento ou restaurar o cenário demonstrativo."
             adminActionTab="competitions"
           />
         ) : filteredCompetitions.length === 0 ? (
@@ -202,7 +203,7 @@ export const CompetitionsView: React.FC = () => {
                     <div className="space-y-2 text-xs text-slate-500 mb-6">
                       <div className="flex items-center gap-2">
                         <Calendar className="w-3.5 h-3.5 text-[#0066B2]" />
-                        <span>{comp.startDate || 'Data a confirmar'}</span>
+                        <span>{formatDate(comp.startDate, 'Data a confirmar')}</span>
                       </div>
                       <div className="flex items-center gap-2">
                         <MapPin className="w-3.5 h-3.5 text-[#0066B2]" />

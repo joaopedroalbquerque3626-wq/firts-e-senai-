@@ -15,6 +15,7 @@ import {
   Zap,
   Calendar
 } from 'lucide-react';
+import { formatDateRange } from '../utils/formatters';
 
 export const TeamDetailView: React.FC = () => {
   const { data, routeParam, navigateTo, openLeadModal } = useApp();
@@ -81,7 +82,7 @@ export const TeamDetailView: React.FC = () => {
 
           <div className="p-6 sm:p-10">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6">
-              <div className="flex items-center gap-6">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-6 min-w-0">
                 {team.crestUrl ? (
                   <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-xl bg-white border-2 border-white shadow-md overflow-hidden shrink-0 -mt-16 sm:-mt-20 relative z-10">
                     <img
@@ -97,7 +98,7 @@ export const TeamDetailView: React.FC = () => {
                   </div>
                 )}
 
-                <div>
+                <div className="min-w-0">
                   <div className="flex flex-wrap items-center gap-2 mb-2">
                     <span className="px-2.5 py-0.5 bg-[#002B49] text-white text-xs font-mono font-bold uppercase rounded">
                       Equipe participante
@@ -113,7 +114,7 @@ export const TeamDetailView: React.FC = () => {
                     )}
                   </div>
 
-                  <h1 className="text-2xl sm:text-4xl font-heading font-extrabold text-[#002B49]">
+                  <h1 className="text-2xl sm:text-4xl font-heading font-extrabold text-[#002B49] break-words">
                     {team.name}
                   </h1>
                 </div>
@@ -177,8 +178,8 @@ export const TeamDetailView: React.FC = () => {
         {/* Current Active Competition */}
         {currentCompetition && (
           <div className="bg-white rounded-2xl border border-slate-200 p-6 sm:p-8 mb-10 shadow-sm">
-            <div className="flex items-center justify-between">
-              <div>
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+              <div className="min-w-0">
                 <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-[#0066B2]">
                   Torneio da Temporada
                 </span>
@@ -186,13 +187,13 @@ export const TeamDetailView: React.FC = () => {
                   {currentCompetition.name}
                 </h3>
                 <p className="text-xs text-slate-500 mt-1">
-                  {currentCompetition.startDate} a {currentCompetition.endDate} • {currentCompetition.location}
+                  {formatDateRange(currentCompetition.startDate, currentCompetition.endDate)} • {currentCompetition.location || 'Local a confirmar'}
                 </p>
               </div>
 
               <button
                 onClick={() => navigateTo('competition-detail', currentCompetition.slug || currentCompetition.id)}
-                className="px-4 py-2 bg-blue-50 text-[#0066B2] text-xs font-bold uppercase tracking-wider rounded-lg border border-blue-200 hover:bg-blue-100 transition-colors flex items-center gap-1"
+                className="w-full sm:w-auto justify-center px-4 py-2 bg-blue-50 text-[#0066B2] text-xs font-bold uppercase tracking-wider rounded-lg border border-blue-200 hover:bg-blue-100 transition-colors flex items-center gap-1 shrink-0"
               >
                 <span>Ver Hub do Evento</span>
                 <ArrowRight className="w-3.5 h-3.5" />
@@ -282,7 +283,7 @@ export const TeamDetailView: React.FC = () => {
         {teamSponsors.length > 0 && (
           <div className="bg-white rounded-2xl border border-slate-200 p-6 sm:p-8 shadow-sm">
             <h2 className="text-sm font-mono font-bold uppercase tracking-wider text-[#002B49] mb-4">
-              Patrocinadores Oficiais Desta Equipe
+              Apoiadores vinculados a esta equipe
             </h2>
             <div className="flex flex-wrap items-center gap-6">
               {teamSponsors.map((sp) => (

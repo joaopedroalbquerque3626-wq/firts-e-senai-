@@ -1,6 +1,6 @@
 {
-  "name": "Plataforma de Competições e Patrocínio",
-  "description": "Portal oficial FIRST® Inspires para torneios de robótica (FRC, FTC, FLL), diretório de equipes, súmulas e cotas de patrocínio STEM.",
+  "name": "FIRST & SENAI | Protótipo de Competições",
+  "description": "Protótipo acadêmico independente para demonstrar competições de robótica, equipes, resultados e propostas de patrocínio.",
   "requestFramePermissions": [],
   "majorCapabilities": [
     "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"

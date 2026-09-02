@@ -27,18 +27,36 @@ export const LeadModal: React.FC = () => {
   const [isSuccess, setIsSuccess] = useState(false);
 
   useEffect(() => {
-    if (leadModalInitialTarget) {
-      if (leadModalInitialTarget.type === 'COMPETITION') {
-        setInterestType('PATROCINAR_COMPETICAO');
-        if (leadModalInitialTarget.id) setTargetCompetitionId(leadModalInitialTarget.id);
-      } else if (leadModalInitialTarget.type === 'TEAM') {
-        setInterestType('PATROCINAR_EQUIPE');
-        if (leadModalInitialTarget.id) setTargetTeamId(leadModalInitialTarget.id);
-      } else {
-        setInterestType('PARCERIA_INSTITUCIONAL');
-      }
+    if (!showLeadModal) return;
+
+    setTargetCompetitionId('');
+    setTargetTeamId('');
+    setInterestType('PATROCINAR_COMPETICAO');
+
+    if (leadModalInitialTarget?.type === 'COMPETITION') {
+      setInterestType('PATROCINAR_COMPETICAO');
+      setTargetCompetitionId(leadModalInitialTarget.id || '');
+    } else if (leadModalInitialTarget?.type === 'TEAM') {
+      setInterestType('PATROCINAR_EQUIPE');
+      setTargetTeamId(leadModalInitialTarget.id || '');
+    } else if (leadModalInitialTarget?.type === 'INSTITUTIONAL') {
+      setInterestType('PARCERIA_INSTITUCIONAL');
     }
-  }, [leadModalInitialTarget]);
+  }, [showLeadModal, leadModalInitialTarget]);
+
+  useEffect(() => {
+    if (!showLeadModal) return;
+    const previousOverflow = document.body.style.overflow;
+    const handleEscape = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') handleResetAndClose();
+    };
+    document.body.style.overflow = 'hidden';
+    window.addEventListener('keydown', handleEscape);
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      window.removeEventListener('keydown', handleEscape);
+    };
+  }, [showLeadModal]);
 
   if (!showLeadModal) return null;
 
@@ -86,6 +104,8 @@ export const LeadModal: React.FC = () => {
     setEmail('');
     setPhone('');
     setWebsite('');
+    setInterestType('PATROCINAR_COMPETICAO');
+    setInvestmentRange('');
     setMessage('');
     setTargetCompetitionId('');
     setTargetTeamId('');
@@ -96,7 +116,7 @@ export const LeadModal: React.FC = () => {
   return (
     <div
       id="lead-modal-overlay"
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/80 backdrop-blur-sm overflow-y-auto"
+      className="fixed inset-0 z-50 flex items-stretch sm:items-center justify-center p-0 sm:p-4 bg-slate-900/80 backdrop-blur-sm overflow-y-auto"
       onClick={handleResetAndClose}
       role="dialog"
       aria-modal="true"
@@ -104,17 +124,17 @@ export const LeadModal: React.FC = () => {
     >
       <div
         id="lead-modal-content"
-        className="relative w-full max-w-2xl bg-white rounded-2xl shadow-2xl overflow-hidden border border-slate-200 my-8"
+        className="relative w-full max-w-2xl bg-white rounded-none sm:rounded-2xl shadow-2xl overflow-y-auto border border-slate-200 sm:my-8 max-h-[100dvh] sm:max-h-[calc(100dvh-2rem)]"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Modal Top Header */}
-        <div className="bg-[#002B49] text-white p-6 flex items-center justify-between border-b border-[#001D33]">
-          <div className="flex items-center gap-3">
+        <div className="sticky top-0 z-10 bg-[#002B49] text-white p-4 sm:p-6 flex items-center justify-between gap-3 border-b border-[#001D33]">
+          <div className="flex items-center gap-3 min-w-0">
             <div className="p-2 rounded-lg bg-white/10 text-[#00A3E0]">
               <HeartHandshake className="w-5 h-5" />
             </div>
-            <div>
-              <h3 id="lead-modal-title" className="text-lg font-heading font-bold text-white">
+            <div className="min-w-0">
+              <h3 id="lead-modal-title" className="text-base sm:text-lg font-heading font-bold text-white leading-tight">
                 Proposta de Patrocínio & Apoio
               </h3>
               <p className="text-xs text-slate-300">
@@ -126,7 +146,7 @@ export const LeadModal: React.FC = () => {
           <button
             id="close-lead-modal-btn"
             onClick={handleResetAndClose}
-            className="text-slate-400 hover:text-white p-1.5 rounded-lg hover:bg-white/10 transition-colors"
+            className="text-slate-300 hover:text-white p-2 rounded-lg hover:bg-white/10 transition-colors shrink-0"
             aria-label="Fechar formulário de patrocínio"
           >
             <X className="w-5 h-5" />
@@ -134,7 +154,7 @@ export const LeadModal: React.FC = () => {
         </div>
 
         {/* Modal Body */}
-        <div className="p-6 sm:p-8">
+        <div className="p-4 sm:p-8">
           {isSuccess ? (
             <div className="py-8 text-center space-y-4">
               <CheckCircle className="w-16 h-16 text-emerald-600 mx-auto animate-in zoom-in-50 duration-300" />
@@ -142,7 +162,7 @@ export const LeadModal: React.FC = () => {
                 Manifestação de Interesse Registrada!
               </h4>
               <p className="text-sm text-slate-600 max-w-md mx-auto leading-relaxed">
-                Agradecemos o apoio à ciência, robótica e educação. A equipe responsável entrará em contato por e-mail ou telefone.
+                O interesse foi salvo no painel demonstrativo e já pode ser consultado pelo administrador do protótipo.
               </p>
               <button
                 onClick={handleResetAndClose}
@@ -304,11 +324,11 @@ export const LeadModal: React.FC = () => {
                 </label>
               </div>
 
-              <div className="flex items-center justify-between pt-4 border-t border-slate-100">
+              <div className="flex flex-col-reverse sm:flex-row sm:items-center sm:justify-between gap-3 pt-4 border-t border-slate-100">
                 <button
                   type="button"
                   onClick={handleResetAndClose}
-                  className="px-4 py-2.5 text-xs font-semibold text-slate-600 hover:text-slate-900"
+                  className="w-full sm:w-auto px-4 py-2.5 text-xs font-semibold text-slate-600 hover:text-slate-900"
                 >
                   Cancelar
                 </button>
@@ -317,7 +337,7 @@ export const LeadModal: React.FC = () => {
                   id="submit-lead-modal-btn"
                   type="submit"
                   disabled={isSubmitting || !privacyConsent}
-                  className="px-6 py-2.5 bg-[#ED1C24] hover:bg-[#C91319] text-white text-xs font-bold uppercase tracking-wider rounded-lg shadow-sm hover:shadow transition-all flex items-center gap-2 disabled:opacity-50"
+                  className="w-full sm:w-auto px-6 py-2.5 bg-[#ED1C24] hover:bg-[#C91319] text-white text-xs font-bold uppercase tracking-wider rounded-lg shadow-sm hover:shadow transition-all flex items-center justify-center gap-2 disabled:opacity-50"
                 >
                   <span>{isSubmitting ? 'Enviando...' : 'Enviar Solicitação'}</span>
                   <ArrowRight className="w-4 h-4" />

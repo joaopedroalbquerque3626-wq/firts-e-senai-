@@ -1,16 +1,9 @@
 import React, { useState } from 'react';
 import { useApp } from '../context/AppContext';
 import {
-  ArrowUpRight,
-  ShieldCheck,
   CheckCircle,
-  Briefcase,
   ArrowRight,
   HeartHandshake,
-  Bot,
-  GraduationCap,
-  Sparkles,
-  Award
 } from 'lucide-react';
 import { InterestType } from '../types';
 import { FirstLogo, SenaiLogo } from '../components/Logos';
@@ -34,6 +27,20 @@ export const SponsorshipView: React.FC = () => {
   const [isSuccess, setIsSuccess] = useState(false);
 
   const availableOpportunities = data.opportunities.filter((o) => o.available);
+
+  const resetForm = () => {
+    setCompanyName('');
+    setContactName('');
+    setEmail('');
+    setPhone('');
+    setWebsite('');
+    setInterestType('PATROCINAR_COMPETICAO');
+    setTargetCompetitionId('');
+    setTargetTeamId('');
+    setInvestmentRange('');
+    setMessage('');
+    setPrivacyConsent(false);
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -66,6 +73,7 @@ export const SponsorshipView: React.FC = () => {
 
     setIsSubmitting(false);
     if (res.success) {
+      resetForm();
       setIsSuccess(true);
     }
   };
@@ -87,7 +95,7 @@ export const SponsorshipView: React.FC = () => {
             </h1>
 
             <p className="text-base sm:text-lg text-slate-600 max-w-3xl leading-relaxed">
-              Ao apoiar equipes e competições verificadas, sua empresa pode contribuir com formação técnica, diversidade e inovação.
+              Este protótipo demonstra como empresas podem encontrar equipes, conhecer oportunidades e registrar interesse em apoiar projetos de robótica educacional.
             </p>
           </div>
 
@@ -111,7 +119,7 @@ export const SponsorshipView: React.FC = () => {
               Atração de Talentos Técnicos
             </h3>
             <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
-              Conexão prioritária com estudantes e Alumni treinados em programação Java, controle industrial CAN/Swerve, manufatura CNC e liderança de projetos.
+              Aproxime empresas de estudantes, mentores e projetos que desenvolvem programação, engenharia, comunicação e liderança.
             </p>
           </div>
 
@@ -123,7 +131,7 @@ export const SponsorshipView: React.FC = () => {
               Visibilidade em Arenas & Transmissões
             </h3>
             <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
-              Presença de marca na carcaça de robôs de 57kg, banners de arena, coletes de pit e transmissões ao vivo com milhares de espectadores apaixonados por tecnologia.
+              Demonstre possibilidades de presença de marca em robôs, uniformes, materiais de equipe, arenas e conteúdos digitais.
             </p>
           </div>
 
@@ -135,7 +143,7 @@ export const SponsorshipView: React.FC = () => {
               Impacto ESG & Diversidade STEM
             </h3>
             <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
-              Fortaleça suas metas de responsabilidade social corporativa subsidiando kits de robótica e bolsas de estudo para jovens de escolas públicas e periferias.
+              Apresente opções de apoio a kits, viagens, formação técnica, diversidade e acesso de jovens a experiências STEM.
             </p>
           </div>
         </div>
@@ -171,7 +179,11 @@ export const SponsorshipView: React.FC = () => {
                   </div>
 
                   <button
-                    onClick={() => openLeadModal({ type: 'INSTITUTIONAL', name: `${opp.tierOrValue || 'Oportunidade'} - ${opp.title}` })}
+                    onClick={() => openLeadModal({
+                      type: opp.type,
+                      id: opp.targetId,
+                      name: opp.targetName || `${opp.tierOrValue || 'Oportunidade'} - ${opp.title}`
+                    })}
                     className="w-full py-2.5 bg-[#0066B2] hover:bg-[#004C85] text-white text-xs font-bold uppercase tracking-wider rounded-lg transition-all"
                   >
                     Solicitar esta Cota
@@ -186,10 +198,10 @@ export const SponsorshipView: React.FC = () => {
         <div className="bg-white border border-slate-200 rounded-3xl p-8 sm:p-12 shadow-md">
           <div className="max-w-2xl mb-8">
             <h2 className="font-heading text-2xl sm:text-3xl font-black text-[#002B49]">
-              Fale com o Comitê de Parcerias & Patrocínio
+              Registre uma proposta de demonstração
             </h2>
             <p className="text-xs sm:text-sm text-slate-600 mt-2">
-              Preencha os dados da sua empresa abaixo para receber a apresentação executiva e agendar uma reunião com nossa equipe de relações institucionais.
+              Preencha o formulário para testar o envio, a persistência e a gestão de propostas no painel administrativo.
             </p>
           </div>
 
@@ -200,7 +212,7 @@ export const SponsorshipView: React.FC = () => {
                 Proposta Recebida com Sucesso!
               </h3>
               <p className="text-xs sm:text-sm text-green-800 max-w-md mx-auto">
-                Agradecemos o interesse da sua empresa em investir na FIRST®. Um coordenador entrará em contato em até 24 horas úteis.
+                A proposta foi salva e já pode ser consultada no painel administrativo do protótipo.
               </p>
               <button
                 onClick={() => setIsSuccess(false)}
@@ -221,7 +233,7 @@ export const SponsorshipView: React.FC = () => {
                     required
                     value={companyName}
                     onChange={(e) => setCompanyName(e.target.value)}
-                    placeholder="Ex: Rockwell, Qualcomm, Embraer"
+                    placeholder="Ex: Empresa Exemplo"
                     className="w-full px-4 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-xs text-slate-900 focus:ring-2 focus:ring-[#0066B2] focus:outline-none"
                   />
                 </div>
@@ -332,7 +344,7 @@ export const SponsorshipView: React.FC = () => {
               <button
                 type="submit"
                 disabled={isSubmitting || !privacyConsent}
-                className="px-8 py-3.5 bg-[#0066B2] hover:bg-[#004C85] text-white text-xs font-bold uppercase tracking-wider rounded-xl transition-all shadow-md flex items-center gap-2 disabled:opacity-50"
+                className="w-full sm:w-auto px-8 py-3.5 bg-[#0066B2] hover:bg-[#004C85] text-white text-xs font-bold uppercase tracking-wider rounded-xl transition-all shadow-md flex items-center justify-center gap-2 disabled:opacity-50"
               >
                 {isSubmitting ? 'Enviando Proposta...' : 'Enviar Solicitação de Patrocínio'}
                 <ArrowRight className="w-4 h-4" />

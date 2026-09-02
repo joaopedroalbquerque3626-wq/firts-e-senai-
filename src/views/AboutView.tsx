@@ -15,7 +15,8 @@ import {
   Quote,
   Sparkles,
   CheckCircle2,
-  Building2
+  Building2,
+  ExternalLink
 } from 'lucide-react';
 import { FirstLogo, SenaiLogo } from '../components/Logos';
 
@@ -52,6 +53,13 @@ export const AboutView: React.FC = () => {
             </div>
           </div>
         </div>
+
+        {settings.aboutText && (
+          <div className="mb-12 rounded-2xl border border-blue-200 bg-blue-50/70 p-6 sm:p-8">
+            <span className="text-xs font-bold uppercase tracking-wider text-[#0066B2]">Apresentação</span>
+            <p className="mt-2 text-sm sm:text-base leading-relaxed text-slate-700">{settings.aboutText}</p>
+          </div>
+        )}
 
         {/* Co-Founders Tribute */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-16">
@@ -215,6 +223,14 @@ export const AboutView: React.FC = () => {
               <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
                 A FIRST®, o SENAI e o SESI são referências citadas neste projeto. Calendários, vínculos institucionais e regras devem ser confirmados diretamente em seus canais oficiais.
               </p>
+              <div className="flex flex-wrap gap-3 pt-2">
+                <a href="https://www.firstinspires.org/" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 text-xs font-bold text-[#0066B2] hover:underline">
+                  Site oficial FIRST® <ExternalLink className="w-3.5 h-3.5" />
+                </a>
+                <a href="https://www.portaldaindustria.com.br/sesi/canais/robotica/" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 text-xs font-bold text-[#00884A] hover:underline">
+                  Robótica SESI <ExternalLink className="w-3.5 h-3.5" />
+                </a>
+              </div>
             </div>
 
             <div className="lg:col-span-7 grid grid-cols-1 sm:grid-cols-2 gap-4">

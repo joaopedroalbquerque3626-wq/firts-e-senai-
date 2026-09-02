@@ -15,6 +15,7 @@ import {
   Award
 } from 'lucide-react';
 import { CompetitionStatus } from '../types';
+import { formatDate, formatDateRange } from '../utils/formatters';
 
 export const CompetitionDetailView: React.FC = () => {
   const { data, routeParam, navigateTo, openLeadModal } = useApp();
@@ -153,9 +154,9 @@ export const CompetitionDetailView: React.FC = () => {
                   <Calendar className="w-5 h-5" />
                 </div>
                 <div>
-                  <div className="text-[10px] font-bold uppercase text-slate-400">Datas Oficiais</div>
+                  <div className="text-[10px] font-bold uppercase text-slate-400">Datas do evento</div>
                   <div className="text-xs font-bold text-slate-800">
-                    {competition.startDate} a {competition.endDate}
+                    {formatDateRange(competition.startDate, competition.endDate)}
                   </div>
                 </div>
               </div>
@@ -179,7 +180,7 @@ export const CompetitionDetailView: React.FC = () => {
                 <div>
                   <div className="text-[10px] font-bold uppercase text-slate-400">Equipes Inscritas</div>
                   <div className="text-xs font-bold text-slate-800">
-                    {registeredTeams.length > 0 ? registeredTeams.length : competition.teamsCount} Times Homologados
+                    {registeredTeams.length > 0 ? registeredTeams.length : competition.teamsCount || 0} equipes cadastradas
                   </div>
                 </div>
               </div>
@@ -274,7 +275,7 @@ export const CompetitionDetailView: React.FC = () => {
           <div className="bg-white rounded-2xl border border-slate-200 p-6 sm:p-8 mb-10 shadow-sm">
             <h2 className="text-xl font-heading font-bold text-[#002B49] mb-6 flex items-center gap-2">
               <Trophy className="w-5 h-5 text-[#FFC72C]" />
-              <span>Súmulas & Placar de Alianças Homologado</span>
+              <span>Súmulas & placar de alianças</span>
             </h2>
 
             <div className="space-y-4">
@@ -287,7 +288,7 @@ export const CompetitionDetailView: React.FC = () => {
                     <span className="font-bold bg-white px-2 py-0.5 rounded border border-slate-200 text-slate-700">
                       {res.stage}
                     </span>
-                    <span className="font-mono">{res.date}</span>
+                    <span className="font-mono">{formatDate(res.date)}</span>
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-11 gap-3 items-center">
@@ -331,7 +332,7 @@ export const CompetitionDetailView: React.FC = () => {
           <div className="bg-white rounded-2xl border border-slate-200 p-6 sm:p-8 mb-10 shadow-sm">
             <h2 className="text-xl font-heading font-bold text-[#002B49] mb-6 flex items-center gap-2">
               <Users className="w-5 h-5 text-[#0066B2]" />
-              <span>Equipes Homologadas & Pits da Arena</span>
+              <span>Equipes cadastradas & pits da arena</span>
             </h2>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
@@ -339,7 +340,12 @@ export const CompetitionDetailView: React.FC = () => {
                 <div
                   key={team.id}
                   className="p-4 rounded-xl bg-slate-50 border border-slate-200 hover:border-[#0066B2] transition-colors flex items-center justify-between gap-3 group cursor-pointer"
-                  onClick={() => navigateTo('team-detail', team.slug)}
+                  onClick={() => navigateTo('team-detail', team.slug || team.id)}
+                  role="button"
+                  tabIndex={0}
+                  onKeyDown={(event) => {
+                    if (event.key === 'Enter' || event.key === ' ') navigateTo('team-detail', team.slug || team.id);
+                  }}
                 >
                   <div className="flex items-center gap-3">
                     <img
@@ -372,7 +378,7 @@ export const CompetitionDetailView: React.FC = () => {
         {compSponsors.length > 0 && (
           <div className="bg-white rounded-2xl border border-slate-200 p-6 sm:p-8 shadow-sm">
             <h2 className="text-sm font-mono font-bold uppercase tracking-wider text-[#002B49] mb-4">
-              Patrocinadores Oficiais Deste Evento
+              Apoiadores vinculados a este evento
             </h2>
             <div className="flex flex-wrap items-center gap-6">
               {compSponsors.map((sp) => (

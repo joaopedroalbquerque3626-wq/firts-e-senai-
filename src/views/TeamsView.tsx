@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { useApp } from '../context/AppContext';
 import { EmptyState } from '../components/EmptyState';
-import { Search, ArrowRight, ArrowUpRight, Users, Bot, MapPin, HeartHandshake, Award } from 'lucide-react';
+import { Search, ArrowRight, Bot, MapPin, HeartHandshake } from 'lucide-react';
 
 export const TeamsView: React.FC = () => {
   const { data, navigateTo, openLeadModal } = useApp();
@@ -48,11 +48,11 @@ export const TeamsView: React.FC = () => {
           </div>
 
           <h1 className="font-heading font-black text-3xl sm:text-5xl text-[#002B49] tracking-tight leading-tight">
-            Equipes Oficiais da Temporada
+            Equipes da Temporada
           </h1>
 
           <p className="text-sm sm:text-base text-slate-600 max-w-2xl mt-2 leading-relaxed">
-            Conheça as equipes homologadas (FRC®, FTC®, FLL®), seus robôs industriais, projetos de impacto social e conecte sua empresa para apoiar o financiamento da temporada.
+            Conheça as equipes do cenário demonstrativo, seus projetos, modalidades e necessidades de apoio para a temporada.
           </p>
         </div>
 
@@ -174,7 +174,7 @@ export const TeamsView: React.FC = () => {
                   )}
                 </div>
 
-                <div className="pt-4 border-t border-slate-100 flex items-center justify-between gap-3">
+                <div className="pt-4 border-t border-slate-100 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                   <button
                     onClick={() => navigateTo('team-detail', team.slug || team.id)}
                     className="text-xs font-bold text-[#0066B2] hover:text-[#004C85] inline-flex items-center gap-1"
@@ -185,7 +185,7 @@ export const TeamsView: React.FC = () => {
 
                   <button
                     onClick={() => openLeadModal({ type: 'TEAM', id: team.id, name: team.name })}
-                    className="px-3.5 py-1.5 bg-[#0066B2] hover:bg-[#004C85] text-white text-xs font-bold rounded-lg transition-all"
+                    className="w-full sm:w-auto px-3.5 py-2 sm:py-1.5 bg-[#0066B2] hover:bg-[#004C85] text-white text-xs font-bold rounded-lg transition-all"
                   >
                     Patrocinar
                   </button>

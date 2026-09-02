@@ -35,8 +35,28 @@ import {
   CompetitionStatus,
   PublishStatus,
   LeadStatus,
-  InterestType
+  InterestType,
+  SponsorCategory,
+  SponsorshipProperty
 } from '../../types';
+import { formatDate, slugify } from '../../utils/formatters';
+
+type AdminTab =
+  | 'overview'
+  | 'competitions'
+  | 'teams'
+  | 'results'
+  | 'sponsors'
+  | 'leads'
+  | 'stories'
+  | 'metrics'
+  | 'settings'
+  | 'messages';
+
+const ADMIN_TABS: AdminTab[] = [
+  'overview', 'competitions', 'teams', 'results', 'sponsors',
+  'leads', 'stories', 'metrics', 'settings', 'messages'
+];
 
 export const AdminDashboard: React.FC = () => {
   const {
@@ -46,21 +66,11 @@ export const AdminDashboard: React.FC = () => {
     clearAllData,
     logoutAdmin,
     navigateTo,
-    showToast
+    showToast,
+    routeParam
   } = useApp();
 
-  const [activeTab, setActiveTab] = useState<
-    | 'overview'
-    | 'competitions'
-    | 'teams'
-    | 'results'
-    | 'sponsors'
-    | 'leads'
-    | 'stories'
-    | 'metrics'
-    | 'settings'
-    | 'messages'
-  >('overview');
+  const [activeTab, setActiveTab] = useState<AdminTab>('overview');
 
   // Competitions state
   const [editingComp, setEditingComp] = useState<Competition | null>(null);
@@ -97,6 +107,12 @@ export const AdminDashboard: React.FC = () => {
     setSettingsForm(data.settings);
   }, [data.settings]);
 
+  useEffect(() => {
+    if (routeParam && ADMIN_TABS.includes(routeParam as AdminTab)) {
+      setActiveTab(routeParam as AdminTab);
+    }
+  }, [routeParam]);
+
   // ----------------------------------------------------
   // Handlers for Competitions
   // ----------------------------------------------------
@@ -109,7 +125,9 @@ export const AdminDashboard: React.FC = () => {
     const finalComp = {
       ...editingComp,
       updatedAt: now,
-      slug: editingComp.slug || editingComp.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '')
+      name: editingComp.name.trim(),
+      modality: editingComp.modality.trim(),
+      slug: editingComp.slug || slugify(editingComp.name)
     };
 
     if (isCreatingComp) {
@@ -118,7 +136,7 @@ export const AdminDashboard: React.FC = () => {
       updatedList = data.competitions.map((c) => (c.id === finalComp.id ? finalComp : c));
     }
 
-    await syncAdminData({ competitions: updatedList });
+    if (!(await syncAdminData({ competitions: updatedList }))) return;
     setEditingComp(null);
     setIsCreatingComp(false);
   };
@@ -141,7 +159,9 @@ export const AdminDashboard: React.FC = () => {
     const finalTeam = {
       ...editingTeam,
       updatedAt: now,
-      slug: editingTeam.slug || editingTeam.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '')
+      name: editingTeam.name.trim(),
+      modality: editingTeam.modality.trim(),
+      slug: editingTeam.slug || slugify(editingTeam.name)
     };
 
     if (isCreatingTeam) {
@@ -150,7 +170,7 @@ export const AdminDashboard: React.FC = () => {
       updatedList = data.teams.map((t) => (t.id === finalTeam.id ? finalTeam : t));
     }
 
-    await syncAdminData({ teams: updatedList });
+    if (!(await syncAdminData({ teams: updatedList }))) return;
     setEditingTeam(null);
     setIsCreatingTeam(false);
   };
@@ -175,7 +195,7 @@ export const AdminDashboard: React.FC = () => {
       updatedList = data.results.map((r) => (r.id === editingResult.id ? editingResult : r));
     }
 
-    await syncAdminData({ results: updatedList });
+    if (!(await syncAdminData({ results: updatedList }))) return;
     setEditingResult(null);
     setIsCreatingResult(false);
   };
@@ -200,7 +220,7 @@ export const AdminDashboard: React.FC = () => {
       updatedList = data.sponsors.map((s) => (s.id === editingSponsor.id ? editingSponsor : s));
     }
 
-    await syncAdminData({ sponsors: updatedList });
+    if (!(await syncAdminData({ sponsors: updatedList }))) return;
     setEditingSponsor(null);
     setIsCreatingSponsor(false);
   };
@@ -222,7 +242,7 @@ export const AdminDashboard: React.FC = () => {
       updatedList = data.opportunities.map((o) => (o.id === editingOpp.id ? editingOpp : o));
     }
 
-    await syncAdminData({ opportunities: updatedList });
+    if (!(await syncAdminData({ opportunities: updatedList }))) return;
     setEditingOpp(null);
     setIsCreatingOpp(false);
   };
@@ -257,13 +277,14 @@ export const AdminDashboard: React.FC = () => {
     if (!editingStory) return;
 
     let updatedList: Story[];
+    const finalStory = { ...editingStory, slug: editingStory.slug || slugify(editingStory.title) };
     if (isCreatingStory) {
-      updatedList = [editingStory, ...data.stories];
+      updatedList = [finalStory, ...data.stories];
     } else {
-      updatedList = data.stories.map((s) => (s.id === editingStory.id ? editingStory : s));
+      updatedList = data.stories.map((s) => (s.id === finalStory.id ? finalStory : s));
     }
 
-    await syncAdminData({ stories: updatedList });
+    if (!(await syncAdminData({ stories: updatedList }))) return;
     setEditingStory(null);
     setIsCreatingStory(false);
   };
@@ -285,7 +306,7 @@ export const AdminDashboard: React.FC = () => {
       updatedList = data.metrics.map((m) => (m.id === editingMetric.id ? editingMetric : m));
     }
 
-    await syncAdminData({ metrics: updatedList });
+    if (!(await syncAdminData({ metrics: updatedList }))) return;
     setEditingMetric(null);
     setIsCreatingMetric(false);
   };
@@ -325,7 +346,7 @@ export const AdminDashboard: React.FC = () => {
   return (
     <div id="admin-dashboard-view" className="w-full bg-[#fdfdfd] min-h-screen text-[#111111] pb-20">
       {/* Top Admin Navigation Bar */}
-      <div className="bg-[#ffffff] border-b border-[#111111] sticky top-20 z-30 px-4 sm:px-6 lg:px-8 py-3.5 flex flex-wrap items-center justify-between gap-4 shadow-xs">
+      <div className="bg-[#ffffff] border-b border-[#111111] z-30 px-4 sm:px-6 lg:px-8 py-3.5 flex flex-wrap items-center justify-between gap-4 shadow-xs lg:sticky lg:top-[107px]">
         <div className="flex items-center gap-3">
           <span className="w-2.5 h-2.5 bg-[#84cc16] rounded-full animate-pulse border border-[#111111]"></span>
           <h1 className="font-serif text-xl text-[#111111]">
@@ -373,7 +394,7 @@ export const AdminDashboard: React.FC = () => {
             },
             { id: 'sponsors', label: `Patrocinadores (${data.sponsors.length})`, icon: <BriefcaseIcon className="w-4 h-4" /> },
             { id: 'stories', label: `Histórias (${data.stories.length})`, icon: <FileText className="w-4 h-4" /> },
-            { id: 'metrics', label: `Indicadores Reais (${data.metrics.length})`, icon: <ShieldCheck className="w-4 h-4" /> },
+            { id: 'metrics', label: `Indicadores (${data.metrics.length})`, icon: <ShieldCheck className="w-4 h-4" /> },
             {
               id: 'messages',
               label: `Mensagens ${unreadMessagesCount > 0 ? `(${unreadMessagesCount})` : ''}`,
@@ -383,7 +404,7 @@ export const AdminDashboard: React.FC = () => {
           ].map((tab) => (
             <button
               key={tab.id}
-              onClick={() => setActiveTab(tab.id as any)}
+              onClick={() => setActiveTab(tab.id as AdminTab)}
               className={`flex items-center gap-2 px-4 py-2.5 font-mono text-xs uppercase tracking-wider border whitespace-nowrap transition-all cursor-pointer ${
                 activeTab === tab.id
                   ? 'border-[#111111] bg-[#111111] text-[#fdfdfd] font-bold shadow-[2px_2px_0px_#111111]'
@@ -402,7 +423,7 @@ export const AdminDashboard: React.FC = () => {
         {activeTab === 'overview' && (
           <div className="space-y-8">
             {/* Quick Stats Grid */}
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
               <div className="p-5 bg-[#ffffff] border border-[#111111] shadow-[3px_3px_0px_#111111]">
                 <span className="text-xs font-mono uppercase tracking-wider text-[#777777] block">
                   Competições Cadastradas
@@ -441,28 +462,28 @@ export const AdminDashboard: React.FC = () => {
 
               <div className="p-5 bg-[#ffffff] border border-[#111111] shadow-[3px_3px_0px_#111111]">
                 <span className="text-xs font-mono uppercase tracking-wider text-[#777777] block">
-                  Resultados Oficiais
+                  Resultados Cadastrados
                 </span>
                 <div className="font-serif text-3xl sm:text-4xl text-[#111111] mt-1">
                   {data.results.length}
                 </div>
-                <span className="text-[11px] text-[#777777] font-mono">Validados</span>
+                <span className="text-[11px] text-[#777777] font-mono">Dados do cenário</span>
               </div>
             </div>
 
             {/* Test & Data Seeding Tools */}
             <div className="p-6 bg-[#ffffff] border border-[#111111] shadow-[4px_4px_0px_#111111] space-y-4">
-              <div className="flex items-center justify-between border-b border-[#111111] pb-3">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 border-b border-[#111111] pb-3">
                 <div>
                   <h3 className="font-serif text-xl text-[#111111]">
-                    Ferramentas de Homologação & Estado Zero
+                    Ferramentas de Demonstração & Estado Vazio
                   </h3>
                   <p className="text-xs text-[#666666] font-sans">
                     Permite testar o comportamento visual da plataforma tanto com estado zerado quanto com dados de exemplo.
                   </p>
                 </div>
                 <span className="px-2.5 py-1 bg-[#f4f3ef] border border-[#111111] text-[10px] font-mono uppercase text-[#C2410C]">
-                  Regra Zero Invenção
+                  Ambiente de protótipo
                 </span>
               </div>
 
@@ -497,7 +518,7 @@ export const AdminDashboard: React.FC = () => {
 
             {/* Recent Leads Preview */}
             <div className="bg-[#ffffff] border border-[#111111] shadow-[3px_3px_0px_#111111] p-6">
-              <div className="flex items-center justify-between border-b border-[#111111] pb-4 mb-4">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 border-b border-[#111111] pb-4 mb-4">
                 <h3 className="font-serif text-xl text-[#111111]">
                   Últimos Leads Comerciais Recebidos
                 </h3>
@@ -532,7 +553,7 @@ export const AdminDashboard: React.FC = () => {
                       </div>
 
                       <div className="text-xs text-[#777777] shrink-0 font-mono">
-                        {new Date(lead.createdAt).toLocaleDateString('pt-BR')}
+                        {formatDate(lead.createdAt)}
                       </div>
                     </div>
                   ))}
@@ -547,7 +568,7 @@ export const AdminDashboard: React.FC = () => {
         {/* ==================================================== */}
         {activeTab === 'competitions' && (
           <div className="space-y-6">
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
               <h2 className="font-serif text-2xl text-[#111111]">
                 Gestão de Competições
               </h2>
@@ -557,7 +578,7 @@ export const AdminDashboard: React.FC = () => {
                     id: `comp_${Date.now()}`,
                     slug: '',
                     name: '',
-                    modality: 'Futsal',
+                    modality: 'FRC® (referência de modalidade)',
                     season: 'Temporada 2026',
                     status: 'INSCRICOES_ABERTAS',
                     publishStatus: 'published',
@@ -594,7 +615,7 @@ export const AdminDashboard: React.FC = () => {
                       required
                       value={editingComp.name}
                       onChange={(e) => setEditingComp({ ...editingComp, name: e.target.value })}
-                      placeholder="Ex: Taça Regional de Basquete 2026"
+                      placeholder="Ex: Desafio Regional de Robótica 2026"
                       className="w-full px-3.5 py-2 bg-[#fdfdfd] border border-[#111111] text-[#111111] text-sm focus:outline-hidden focus:ring-1 focus:ring-[#C2410C]"
                     />
                   </div>
@@ -608,7 +629,7 @@ export const AdminDashboard: React.FC = () => {
                       required
                       value={editingComp.modality}
                       onChange={(e) => setEditingComp({ ...editingComp, modality: e.target.value })}
-                      placeholder="Ex: Skate Street, Futsal, Vôlei..."
+                      placeholder="Ex: FRC®, FTC® ou FLL®"
                       className="w-full px-3.5 py-2 bg-[#fdfdfd] border border-[#111111] text-[#111111] text-sm focus:outline-hidden focus:ring-1 focus:ring-[#C2410C]"
                     />
                   </div>
@@ -734,7 +755,7 @@ export const AdminDashboard: React.FC = () => {
                       type="text"
                       value={editingComp.regulationName || ''}
                       onChange={(e) => setEditingComp({ ...editingComp, regulationName: e.target.value })}
-                      placeholder="Ex: Regulamento Oficial 2026.pdf"
+                      placeholder="Ex: Regulamento da competição"
                       className="w-full px-3.5 py-2 bg-[#fdfdfd] border border-[#111111] text-[#111111] text-sm focus:outline-hidden focus:ring-1 focus:ring-[#C2410C]"
                     />
                   </div>
@@ -770,7 +791,7 @@ export const AdminDashboard: React.FC = () => {
               ) : (
                 <div className="divide-y divide-[#e5e5e5]">
                   {data.competitions.map((comp) => (
-                    <div key={comp.id} className="p-4 sm:p-5 flex items-center justify-between gap-4">
+                    <div key={comp.id} className="p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                       <div>
                         <div className="flex items-center gap-2 mb-1">
                           <strong className="font-serif text-lg text-[#111111]">
@@ -819,7 +840,7 @@ export const AdminDashboard: React.FC = () => {
         {/* ==================================================== */}
         {activeTab === 'teams' && (
           <div className="space-y-6">
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
               <h2 className="font-serif text-2xl text-[#111111]">
                 Gestão de Equipes & Atletas
               </h2>
@@ -829,7 +850,7 @@ export const AdminDashboard: React.FC = () => {
                     id: `team_${Date.now()}`,
                     slug: '',
                     name: '',
-                    modality: 'Futsal',
+                    modality: 'FRC® (referência de modalidade)',
                     seekingSponsors: true,
                     publishStatus: 'published',
                     members: [],
@@ -866,7 +887,7 @@ export const AdminDashboard: React.FC = () => {
                       required
                       value={editingTeam.name}
                       onChange={(e) => setEditingTeam({ ...editingTeam, name: e.target.value })}
-                      placeholder="Ex: Atlético União Futsal"
+                      placeholder="Ex: #101 — Equipe Órbita"
                       className="w-full px-3.5 py-2 bg-[#fdfdfd] border border-[#111111] text-[#111111] text-sm focus:outline-hidden focus:ring-1 focus:ring-[#C2410C]"
                     />
                   </div>
@@ -880,7 +901,7 @@ export const AdminDashboard: React.FC = () => {
                       required
                       value={editingTeam.modality}
                       onChange={(e) => setEditingTeam({ ...editingTeam, modality: e.target.value })}
-                      placeholder="Ex: Futsal, Skate..."
+                      placeholder="Ex: FRC®, FTC® ou FLL®"
                       className="w-full px-3.5 py-2 bg-[#fdfdfd] border border-[#111111] text-[#111111] text-sm focus:outline-hidden focus:ring-1 focus:ring-[#C2410C]"
                     />
                   </div>
@@ -930,13 +951,13 @@ export const AdminDashboard: React.FC = () => {
 
                 <div>
                   <label className="block text-xs font-mono uppercase tracking-wider text-[#666666] mb-1">
-                    História / Biografia Real
+                    História / Biografia
                   </label>
                   <textarea
                     rows={3}
                     value={editingTeam.historyBio || ''}
                     onChange={(e) => setEditingTeam({ ...editingTeam, historyBio: e.target.value })}
-                    placeholder="Histórico real da equipe..."
+                    placeholder="Apresente a origem e os objetivos da equipe..."
                     className="w-full px-3.5 py-2 bg-[#fdfdfd] border border-[#111111] text-[#111111] text-sm focus:outline-hidden focus:ring-1 focus:ring-[#C2410C]"
                   />
                 </div>
@@ -960,7 +981,7 @@ export const AdminDashboard: React.FC = () => {
                       Instagram da equipe
                     </label>
                     <input
-                      type="text"
+                      type="url"
                       value={editingTeam.officialLinks?.instagram || ''}
                       onChange={(e) =>
                         setEditingTeam({
@@ -968,7 +989,7 @@ export const AdminDashboard: React.FC = () => {
                           officialLinks: { ...editingTeam.officialLinks, instagram: e.target.value }
                         })
                       }
-                      placeholder="@equipeoficial"
+                      placeholder="https://instagram.com/equipe"
                       className="w-full px-3.5 py-2 bg-[#fdfdfd] border border-[#111111] text-[#111111] text-sm focus:outline-hidden focus:ring-1 focus:ring-[#C2410C]"
                     />
                   </div>
@@ -1003,9 +1024,9 @@ export const AdminDashboard: React.FC = () => {
                 </p>
               ) : (
                 data.teams.map((team) => (
-                  <div key={team.id} className="p-4 sm:p-5 flex items-center justify-between gap-4">
-                    <div>
-                      <div className="flex items-center gap-2 mb-1">
+                  <div key={team.id} className="p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                    <div className="min-w-0">
+                      <div className="flex flex-wrap items-center gap-2 mb-1">
                         <strong className="font-serif text-lg text-[#111111]">
                           {team.name}
                         </strong>
@@ -1054,16 +1075,16 @@ export const AdminDashboard: React.FC = () => {
         {/* ==================================================== */}
         {activeTab === 'results' && (
           <div className="space-y-6">
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
               <h2 className="font-serif text-2xl text-[#111111]">
-                Gestão de Resultados Oficiais
+                Gestão de Resultados
               </h2>
               <button
                 onClick={() => {
                   setEditingResult({
                     id: `res_${Date.now()}`,
                     competitionId: data.competitions[0]?.id || '',
-                    stage: 'Fase de Grupos',
+                    stage: 'Partida demonstrativa',
                     date: new Date().toISOString().split('T')[0],
                     teamAName: '',
                     scoreA: 0,
@@ -1183,7 +1204,7 @@ export const AdminDashboard: React.FC = () => {
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-xs font-mono uppercase tracking-wider text-[#666666] mb-1">
-                      Vencedor Homologado
+                      Vencedor
                     </label>
                     <input
                       type="text"
@@ -1236,16 +1257,16 @@ export const AdminDashboard: React.FC = () => {
                 </p>
               ) : (
                 data.results.map((r) => (
-                  <div key={r.id} className="p-4 sm:p-5 flex items-center justify-between gap-4">
-                    <div>
-                      <div className="flex items-center gap-2 mb-1">
+                  <div key={r.id} className="p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                    <div className="min-w-0">
+                      <div className="flex flex-wrap items-center gap-2 mb-1">
                         <strong className="font-serif text-base text-[#111111]">
                           {r.teamAName} {r.scoreA !== undefined ? `(${r.scoreA})` : ''} x {r.teamBName || ''} {r.scoreB !== undefined ? `(${r.scoreB})` : ''}
                         </strong>
                         <span className="text-xs text-[#C2410C] font-mono">({r.stage})</span>
                       </div>
                       <p className="text-xs text-[#666666] font-sans">
-                        Data: <span className="font-mono">{new Date(r.date).toLocaleDateString('pt-BR')}</span> {r.winnerName ? `• Vencedor: ${r.winnerName}` : ''}
+                        Data: <span className="font-mono">{formatDate(r.date)}</span> {r.winnerName ? `• Vencedor: ${r.winnerName}` : ''}
                       </p>
                     </div>
 
@@ -1377,9 +1398,9 @@ export const AdminDashboard: React.FC = () => {
           <div className="space-y-8">
             {/* Sponsors Section */}
             <div className="space-y-4">
-              <div className="flex items-center justify-between border-b border-[#111111] pb-3">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 border-b border-[#111111] pb-3">
                 <h2 className="font-serif text-2xl text-[#111111]">
-                  Patrocinadores Oficiais
+                  Patrocinadores do Cenário
                 </h2>
                 <button
                   onClick={() => {
@@ -1402,7 +1423,7 @@ export const AdminDashboard: React.FC = () => {
 
               {editingSponsor && (
                 <form onSubmit={handleSaveSponsor} className="p-6 bg-[#ffffff] border-2 border-[#111111] shadow-[4px_4px_0px_#111111] space-y-4">
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                     <div>
                       <label className="block text-xs font-mono uppercase tracking-wider text-[#666666] mb-1">Nome da Empresa</label>
                       <input
@@ -1417,7 +1438,7 @@ export const AdminDashboard: React.FC = () => {
                       <label className="block text-xs font-mono uppercase tracking-wider text-[#666666] mb-1">Categoria</label>
                       <select
                         value={editingSponsor.category}
-                        onChange={(e) => setEditingSponsor({ ...editingSponsor, category: e.target.value as any })}
+                        onChange={(e) => setEditingSponsor({ ...editingSponsor, category: e.target.value as SponsorCategory })}
                         className="w-full px-3 py-2 bg-[#fdfdfd] border border-[#111111] text-[#111111] text-sm focus:outline-hidden focus:ring-1 focus:ring-[#C2410C]"
                       >
                         <option value="PATROCINADOR_OFICIAL">Patrocinador Oficial</option>
@@ -1435,14 +1456,36 @@ export const AdminDashboard: React.FC = () => {
                         className="w-full px-3 py-2 bg-[#fdfdfd] border border-[#111111] text-[#111111] text-sm focus:outline-hidden focus:ring-1 focus:ring-[#C2410C]"
                       />
                     </div>
+                    <div>
+                      <label className="block text-xs font-mono uppercase tracking-wider text-[#666666] mb-1">Site da Empresa</label>
+                      <input
+                        type="url"
+                        value={editingSponsor.websiteUrl || ''}
+                        onChange={(e) => setEditingSponsor({ ...editingSponsor, websiteUrl: e.target.value })}
+                        placeholder="https://..."
+                        className="w-full px-3 py-2 bg-[#fdfdfd] border border-[#111111] text-[#111111] text-sm focus:outline-hidden focus:ring-1 focus:ring-[#C2410C]"
+                      />
+                    </div>
                   </div>
+                  <label className="flex items-center gap-2 text-xs font-mono uppercase text-[#666666] cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={editingSponsor.active}
+                      onChange={(e) => setEditingSponsor({ ...editingSponsor, active: e.target.checked })}
+                      className="accent-[#C2410C] w-4 h-4"
+                    />
+                    Exibir patrocinador no site
+                  </label>
                   <div className="flex gap-2 pt-2 border-t border-[#111111]">
                     <button type="submit" className="px-4 py-2 bg-[#111111] text-[#fdfdfd] text-xs font-mono uppercase tracking-wider font-bold hover:bg-[#C2410C] transition-colors shadow-[2px_2px_0px_#111111] cursor-pointer">
                       Salvar
                     </button>
                     <button
                       type="button"
-                      onClick={() => setEditingSponsor(null)}
+                      onClick={() => {
+                        setEditingSponsor(null);
+                        setIsCreatingSponsor(false);
+                      }}
                       className="px-3 py-2 border border-[#111111] text-xs font-mono uppercase text-[#666666] hover:bg-[#f4f3ef] hover:text-[#111111] cursor-pointer"
                     >
                       Cancelar
@@ -1453,14 +1496,26 @@ export const AdminDashboard: React.FC = () => {
 
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
                 {data.sponsors.map((sp) => (
-                  <div key={sp.id} className="p-4 bg-[#ffffff] border border-[#111111] shadow-[3px_3px_0px_#111111] flex items-center justify-between">
-                    <div>
+                  <div key={sp.id} className="p-4 bg-[#ffffff] border border-[#111111] shadow-[3px_3px_0px_#111111] flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                    <div className="min-w-0">
                       <h4 className="font-serif text-base text-[#111111]">{sp.name}</h4>
                       <span className="text-xs font-mono uppercase text-[#C2410C]">{sp.category}</span>
                     </div>
-                    <button onClick={() => handleDeleteSponsor(sp.id)} className="text-[#C2410C] p-1.5 border border-[#C2410C] hover:bg-[#C2410C] hover:text-[#fdfdfd] cursor-pointer transition-colors">
-                      <Trash2 className="w-4 h-4" />
-                    </button>
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={() => {
+                          setEditingSponsor(sp);
+                          setIsCreatingSponsor(false);
+                        }}
+                        aria-label={`Editar ${sp.name}`}
+                        className="text-[#111111] p-1.5 border border-[#111111] hover:bg-[#111111] hover:text-[#fdfdfd] cursor-pointer transition-colors"
+                      >
+                        <Edit className="w-4 h-4" />
+                      </button>
+                      <button aria-label={`Excluir ${sp.name}`} onClick={() => handleDeleteSponsor(sp.id)} className="text-[#C2410C] p-1.5 border border-[#C2410C] hover:bg-[#C2410C] hover:text-[#fdfdfd] cursor-pointer transition-colors">
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
                   </div>
                 ))}
               </div>
@@ -1468,7 +1523,7 @@ export const AdminDashboard: React.FC = () => {
 
             {/* Opportunities Section */}
             <div className="space-y-4 pt-6 border-t border-[#111111]">
-              <div className="flex items-center justify-between border-b border-[#111111] pb-3">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 border-b border-[#111111] pb-3">
                 <h2 className="font-serif text-2xl text-[#111111]">
                   Oportunidades & Cotas Comerciais
                 </h2>
@@ -1493,7 +1548,7 @@ export const AdminDashboard: React.FC = () => {
 
               {editingOpp && (
                 <form onSubmit={handleSaveOpportunity} className="p-6 bg-[#ffffff] border-2 border-[#111111] shadow-[4px_4px_0px_#111111] space-y-4">
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                     <div>
                       <label className="block text-xs font-mono uppercase tracking-wider text-[#666666] mb-1">Título da Cota</label>
                       <input
@@ -1506,17 +1561,39 @@ export const AdminDashboard: React.FC = () => {
                       />
                     </div>
                     <div>
+                      <label className="block text-xs font-mono uppercase tracking-wider text-[#666666] mb-1">Destino</label>
+                      <select
+                        value={editingOpp.type}
+                        onChange={(e) => setEditingOpp({
+                          ...editingOpp,
+                          type: e.target.value as SponsorshipOpportunity['type'],
+                          targetId: undefined,
+                          targetName: undefined
+                        })}
+                        className="w-full px-3 py-2 bg-[#fdfdfd] border border-[#111111] text-[#111111] text-sm focus:outline-hidden focus:ring-1 focus:ring-[#C2410C]"
+                      >
+                        <option value="COMPETITION">Competição</option>
+                        <option value="TEAM">Equipe</option>
+                        <option value="INSTITUTIONAL">Institucional</option>
+                      </select>
+                    </div>
+                    <div>
                       <label className="block text-xs font-mono uppercase tracking-wider text-[#666666] mb-1">Propriedade</label>
                       <select
                         value={editingOpp.property}
-                        onChange={(e) => setEditingOpp({ ...editingOpp, property: e.target.value as any })}
+                        onChange={(e) => setEditingOpp({ ...editingOpp, property: e.target.value as SponsorshipProperty })}
                         className="w-full px-3 py-2 bg-[#fdfdfd] border border-[#111111] text-[#111111] text-sm focus:outline-hidden focus:ring-1 focus:ring-[#C2410C]"
                       >
                         <option value="UNIFORME">Uniforme</option>
                         <option value="ESPACO_FISICO">Espaço Físico / Quadra</option>
                         <option value="BANNERS">Banners / Backdrop</option>
                         <option value="REDES_SOCIAIS">Redes Sociais</option>
+                        <option value="TRANSMISSAO">Transmissão</option>
+                        <option value="CONTEUDO">Conteúdo</option>
+                        <option value="MATERIAL_OFICIAL">Materiais</option>
                         <option value="NAMING_RIGHTS">Naming Rights</option>
+                        <option value="ATIVACAO">Ativação</option>
+                        <option value="OUTRO">Outro</option>
                       </select>
                     </div>
                     <div>
@@ -1530,6 +1607,27 @@ export const AdminDashboard: React.FC = () => {
                       />
                     </div>
                   </div>
+                  {editingOpp.type !== 'INSTITUTIONAL' && (
+                    <div>
+                      <label className="block text-xs font-mono uppercase tracking-wider text-[#666666] mb-1">
+                        {editingOpp.type === 'TEAM' ? 'Equipe relacionada' : 'Competição relacionada'}
+                      </label>
+                      <select
+                        value={editingOpp.targetId || ''}
+                        onChange={(e) => {
+                          const options = editingOpp.type === 'TEAM' ? data.teams : data.competitions;
+                          const target = options.find((item) => item.id === e.target.value);
+                          setEditingOpp({ ...editingOpp, targetId: target?.id, targetName: target?.name });
+                        }}
+                        className="w-full px-3 py-2 bg-[#fdfdfd] border border-[#111111] text-[#111111] text-sm focus:outline-hidden focus:ring-1 focus:ring-[#C2410C]"
+                      >
+                        <option value="">Sem vínculo específico</option>
+                        {(editingOpp.type === 'TEAM' ? data.teams : data.competitions).map((item) => (
+                          <option key={item.id} value={item.id}>{item.name}</option>
+                        ))}
+                      </select>
+                    </div>
+                  )}
                   <div>
                     <label className="block text-xs font-mono uppercase tracking-wider text-[#666666] mb-1">Descrição</label>
                     <textarea
@@ -1539,13 +1637,25 @@ export const AdminDashboard: React.FC = () => {
                       className="w-full px-3 py-2 bg-[#fdfdfd] border border-[#111111] text-[#111111] text-sm focus:outline-hidden focus:ring-1 focus:ring-[#C2410C]"
                     />
                   </div>
+                  <label className="flex items-center gap-2 text-xs font-mono uppercase text-[#666666] cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={editingOpp.available}
+                      onChange={(e) => setEditingOpp({ ...editingOpp, available: e.target.checked })}
+                      className="accent-[#C2410C] w-4 h-4"
+                    />
+                    Oportunidade disponível
+                  </label>
                   <div className="flex gap-2 pt-2 border-t border-[#111111]">
                     <button type="submit" className="px-4 py-2 bg-[#111111] text-[#fdfdfd] text-xs font-mono uppercase tracking-wider font-bold hover:bg-[#C2410C] transition-colors shadow-[2px_2px_0px_#111111] cursor-pointer">
                       Salvar
                     </button>
                     <button
                       type="button"
-                      onClick={() => setEditingOpp(null)}
+                      onClick={() => {
+                        setEditingOpp(null);
+                        setIsCreatingOpp(false);
+                      }}
                       className="px-3 py-2 border border-[#111111] text-xs font-mono uppercase text-[#666666] hover:bg-[#f4f3ef] hover:text-[#111111] cursor-pointer"
                     >
                       Cancelar
@@ -1556,14 +1666,26 @@ export const AdminDashboard: React.FC = () => {
 
               <div className="space-y-3">
                 {data.opportunities.map((opp) => (
-                  <div key={opp.id} className="p-4 bg-[#ffffff] border border-[#111111] shadow-[3px_3px_0px_#111111] flex items-center justify-between">
-                    <div>
+                  <div key={opp.id} className="p-4 bg-[#ffffff] border border-[#111111] shadow-[3px_3px_0px_#111111] flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                    <div className="min-w-0">
                       <h4 className="font-serif text-base text-[#111111]">{opp.title}</h4>
                       <p className="text-xs text-[#666666] font-mono">{opp.property} • <span className="text-[#C2410C] font-bold">{opp.tierOrValue || 'Cota Aberta'}</span></p>
                     </div>
-                    <button onClick={() => handleDeleteOpportunity(opp.id)} className="text-[#C2410C] p-1.5 border border-[#C2410C] hover:bg-[#C2410C] hover:text-[#fdfdfd] cursor-pointer transition-colors">
-                      <Trash2 className="w-4 h-4" />
-                    </button>
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={() => {
+                          setEditingOpp(opp);
+                          setIsCreatingOpp(false);
+                        }}
+                        aria-label={`Editar ${opp.title}`}
+                        className="text-[#111111] p-1.5 border border-[#111111] hover:bg-[#111111] hover:text-[#fdfdfd] cursor-pointer transition-colors"
+                      >
+                        <Edit className="w-4 h-4" />
+                      </button>
+                      <button aria-label={`Excluir ${opp.title}`} onClick={() => handleDeleteOpportunity(opp.id)} className="text-[#C2410C] p-1.5 border border-[#C2410C] hover:bg-[#C2410C] hover:text-[#fdfdfd] cursor-pointer transition-colors">
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
                   </div>
                 ))}
               </div>
@@ -1576,15 +1698,15 @@ export const AdminDashboard: React.FC = () => {
         {/* ==================================================== */}
         {activeTab === 'stories' && (
           <div className="space-y-6">
-            <div className="flex items-center justify-between border-b border-[#111111] pb-3">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 border-b border-[#111111] pb-3">
               <h2 className="font-serif text-2xl text-[#111111]">
-                Histórias Reais (Por Trás da Competição)
+                Histórias do Cenário
               </h2>
               <button
                 onClick={() => {
                   setEditingStory({
                     id: `story_${Date.now()}`,
-                    slug: `historia-${Date.now()}`,
+                    slug: '',
                     title: '',
                     subjectName: '',
                     subjectRole: 'PARTICIPANTE',
@@ -1602,7 +1724,7 @@ export const AdminDashboard: React.FC = () => {
 
             {editingStory && (
               <form onSubmit={handleSaveStory} className="p-6 bg-[#ffffff] border-2 border-[#111111] shadow-[4px_4px_0px_#111111] space-y-4">
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                   <div>
                     <label className="block text-xs font-mono uppercase tracking-wider text-[#666666] mb-1">Título da História</label>
                     <input
@@ -1624,9 +1746,35 @@ export const AdminDashboard: React.FC = () => {
                       className="w-full px-3 py-2 bg-[#fdfdfd] border border-[#111111] text-[#111111] text-sm focus:outline-hidden focus:ring-1 focus:ring-[#C2410C]"
                     />
                   </div>
+                  <div>
+                    <label className="block text-xs font-mono uppercase tracking-wider text-[#666666] mb-1">Papel</label>
+                    <select
+                      value={editingStory.subjectRole}
+                      onChange={(e) => setEditingStory({ ...editingStory, subjectRole: e.target.value as Story['subjectRole'] })}
+                      className="w-full px-3 py-2 bg-[#fdfdfd] border border-[#111111] text-[#111111] text-sm focus:outline-hidden focus:ring-1 focus:ring-[#C2410C]"
+                    >
+                      <option value="PARTICIPANTE">Participante</option>
+                      <option value="EQUIPE">Equipe</option>
+                      <option value="TREINADOR">Treinador</option>
+                      <option value="MENTOR">Mentor</option>
+                      <option value="ORGANIZADOR">Organizador</option>
+                      <option value="VOLUNTARIO">Voluntário</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-xs font-mono uppercase tracking-wider text-[#666666] mb-1">Publicação</label>
+                    <select
+                      value={editingStory.publishStatus}
+                      onChange={(e) => setEditingStory({ ...editingStory, publishStatus: e.target.value as Story['publishStatus'] })}
+                      className="w-full px-3 py-2 bg-[#fdfdfd] border border-[#111111] text-[#111111] text-sm focus:outline-hidden focus:ring-1 focus:ring-[#C2410C]"
+                    >
+                      <option value="published">Publicada</option>
+                      <option value="draft">Rascunho</option>
+                    </select>
+                  </div>
                 </div>
                 <div>
-                  <label className="block text-xs font-mono uppercase tracking-wider text-[#666666] mb-1">Conteúdo Real</label>
+                  <label className="block text-xs font-mono uppercase tracking-wider text-[#666666] mb-1">Conteúdo</label>
                   <textarea
                     rows={4}
                     required
@@ -1639,7 +1787,7 @@ export const AdminDashboard: React.FC = () => {
                   <button type="submit" className="px-4 py-2 bg-[#111111] text-[#fdfdfd] text-xs font-mono uppercase tracking-wider font-bold hover:bg-[#C2410C] transition-colors shadow-[2px_2px_0px_#111111] cursor-pointer">
                     Salvar
                   </button>
-                  <button type="button" onClick={() => setEditingStory(null)} className="px-3 py-2 border border-[#111111] text-xs font-mono uppercase text-[#666666] hover:bg-[#f4f3ef] hover:text-[#111111] cursor-pointer">
+                  <button type="button" onClick={() => { setEditingStory(null); setIsCreatingStory(false); }} className="px-3 py-2 border border-[#111111] text-xs font-mono uppercase text-[#666666] hover:bg-[#f4f3ef] hover:text-[#111111] cursor-pointer">
                     Cancelar
                   </button>
                 </div>
@@ -1648,14 +1796,19 @@ export const AdminDashboard: React.FC = () => {
 
             <div className="space-y-3">
               {data.stories.map((s) => (
-                <div key={s.id} className="p-4 bg-[#ffffff] border border-[#111111] shadow-[3px_3px_0px_#111111] flex items-center justify-between">
-                  <div>
+                <div key={s.id} className="p-4 bg-[#ffffff] border border-[#111111] shadow-[3px_3px_0px_#111111] flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                  <div className="min-w-0">
                     <h4 className="font-serif text-base text-[#111111]">{s.title}</h4>
                     <p className="text-xs text-[#666666] font-mono">{s.subjectName} ({s.subjectRole})</p>
                   </div>
-                  <button onClick={() => handleDeleteStory(s.id)} className="text-[#C2410C] p-1.5 border border-[#C2410C] hover:bg-[#C2410C] hover:text-[#fdfdfd] cursor-pointer transition-colors">
-                    <Trash2 className="w-4 h-4" />
-                  </button>
+                  <div className="flex items-center gap-2">
+                    <button onClick={() => { setEditingStory(s); setIsCreatingStory(false); }} aria-label={`Editar ${s.title}`} className="text-[#111111] p-1.5 border border-[#111111] hover:bg-[#111111] hover:text-[#fdfdfd] cursor-pointer transition-colors">
+                      <Edit className="w-4 h-4" />
+                    </button>
+                    <button aria-label={`Excluir ${s.title}`} onClick={() => handleDeleteStory(s.id)} className="text-[#C2410C] p-1.5 border border-[#C2410C] hover:bg-[#C2410C] hover:text-[#fdfdfd] cursor-pointer transition-colors">
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </div>
                 </div>
               ))}
             </div>
@@ -1667,13 +1820,13 @@ export const AdminDashboard: React.FC = () => {
         {/* ==================================================== */}
         {activeTab === 'metrics' && (
           <div className="space-y-6">
-            <div className="flex items-center justify-between border-b border-[#111111] pb-3">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 border-b border-[#111111] pb-3">
               <div>
                 <h2 className="font-serif text-2xl text-[#111111]">
-                  Indicadores de Impacto Verificados
+                  Indicadores do Protótipo
                 </h2>
                 <p className="text-xs text-[#666666] font-sans">
-                  Atenção: Apenas números reais homologados devem ser adicionados aqui.
+                  Números configuráveis exibidos na página inicial.
                 </p>
               </div>
               <button
@@ -1683,7 +1836,7 @@ export const AdminDashboard: React.FC = () => {
                     label: '',
                     value: 0,
                     order: data.metrics.length + 1,
-                    verified: true,
+                    verified: false,
                     publishStatus: 'published'
                   });
                   setIsCreatingMetric(true);
@@ -1709,7 +1862,7 @@ export const AdminDashboard: React.FC = () => {
                     />
                   </div>
                   <div>
-                    <label className="block text-xs font-mono uppercase tracking-wider text-[#666666] mb-1">Valor Real</label>
+                    <label className="block text-xs font-mono uppercase tracking-wider text-[#666666] mb-1">Valor</label>
                     <input
                       type="text"
                       required
@@ -1730,11 +1883,21 @@ export const AdminDashboard: React.FC = () => {
                     />
                   </div>
                 </div>
+                <div className="flex flex-wrap gap-5">
+                  <label className="flex items-center gap-2 text-xs font-mono uppercase text-[#666666] cursor-pointer">
+                    <input type="checkbox" checked={editingMetric.verified} onChange={(e) => setEditingMetric({ ...editingMetric, verified: e.target.checked })} className="accent-[#C2410C] w-4 h-4" />
+                    Dado verificado
+                  </label>
+                  <label className="flex items-center gap-2 text-xs font-mono uppercase text-[#666666] cursor-pointer">
+                    <input type="checkbox" checked={editingMetric.publishStatus === 'published'} onChange={(e) => setEditingMetric({ ...editingMetric, publishStatus: e.target.checked ? 'published' : 'draft' })} className="accent-[#C2410C] w-4 h-4" />
+                    Exibir no site
+                  </label>
+                </div>
                 <div className="flex gap-2 pt-2 border-t border-[#111111]">
                   <button type="submit" className="px-4 py-2 bg-[#111111] text-[#fdfdfd] text-xs font-mono uppercase tracking-wider font-bold hover:bg-[#C2410C] transition-colors shadow-[2px_2px_0px_#111111] cursor-pointer">
                     Salvar
                   </button>
-                  <button type="button" onClick={() => setEditingMetric(null)} className="px-3 py-2 border border-[#111111] text-xs font-mono uppercase text-[#666666] hover:bg-[#f4f3ef] hover:text-[#111111] cursor-pointer">
+                  <button type="button" onClick={() => { setEditingMetric(null); setIsCreatingMetric(false); }} className="px-3 py-2 border border-[#111111] text-xs font-mono uppercase text-[#666666] hover:bg-[#f4f3ef] hover:text-[#111111] cursor-pointer">
                     Cancelar
                   </button>
                 </div>
@@ -1743,14 +1906,19 @@ export const AdminDashboard: React.FC = () => {
 
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               {data.metrics.map((m) => (
-                <div key={m.id} className="p-4 bg-[#ffffff] border border-[#111111] shadow-[3px_3px_0px_#111111] flex items-center justify-between">
-                  <div>
+                <div key={m.id} className="p-4 bg-[#ffffff] border border-[#111111] shadow-[3px_3px_0px_#111111] flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                  <div className="min-w-0">
                     <div className="font-serif text-2xl text-[#C2410C] font-bold">{m.value} {m.unit || ''}</div>
                     <span className="text-xs font-mono uppercase text-[#666666]">{m.label}</span>
                   </div>
-                  <button onClick={() => handleDeleteMetric(m.id)} className="text-[#C2410C] p-1.5 border border-[#C2410C] hover:bg-[#C2410C] hover:text-[#fdfdfd] cursor-pointer transition-colors">
-                    <Trash2 className="w-4 h-4" />
-                  </button>
+                  <div className="flex items-center gap-2">
+                    <button onClick={() => { setEditingMetric(m); setIsCreatingMetric(false); }} aria-label={`Editar ${m.label}`} className="text-[#111111] p-1.5 border border-[#111111] hover:bg-[#111111] hover:text-[#fdfdfd] cursor-pointer transition-colors">
+                      <Edit className="w-4 h-4" />
+                    </button>
+                    <button aria-label={`Excluir ${m.label}`} onClick={() => handleDeleteMetric(m.id)} className="text-[#C2410C] p-1.5 border border-[#C2410C] hover:bg-[#C2410C] hover:text-[#fdfdfd] cursor-pointer transition-colors">
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </div>
                 </div>
               ))}
             </div>
@@ -1774,12 +1942,12 @@ export const AdminDashboard: React.FC = () => {
               <div className="space-y-4">
                 {data.contactMessages.map((msg) => (
                   <div key={msg.id} className={`p-5 bg-[#ffffff] border shadow-[3px_3px_0px_#111111] space-y-2 ${msg.read ? 'border-[#111111]' : 'border-[#C2410C]'}`}>
-                    <div className="flex items-center justify-between">
+                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
                       <div className="flex items-center gap-2">
                         <h4 className="font-serif text-base text-[#111111]">{msg.subject}</h4>
                         {!msg.read && <span className="px-2 py-0.5 bg-[#C2410C] text-white text-[9px] font-mono uppercase">Nova</span>}
                       </div>
-                      <span className="text-xs font-mono text-[#777777]">{new Date(msg.createdAt).toLocaleDateString('pt-BR')}</span>
+                      <span className="text-xs font-mono text-[#777777]">{formatDate(msg.createdAt)}</span>
                     </div>
                     <p className="text-xs text-[#666666] font-sans">De: <strong className="text-[#111111]">{msg.name}</strong> ({msg.email}) {msg.phone ? `• Tel: ${msg.phone}` : ''}</p>
                     <p className="text-xs text-[#444444] p-3 bg-[#fdfdfd] border border-[#e5e5e5] leading-relaxed font-sans">{msg.message}</p>
@@ -1834,7 +2002,7 @@ export const AdminDashboard: React.FC = () => {
 
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <div>
-                <label className="block text-xs font-mono uppercase tracking-wider text-[#666666] mb-1">E-mail Oficial</label>
+                <label className="block text-xs font-mono uppercase tracking-wider text-[#666666] mb-1">E-mail de Contato</label>
                 <input
                   type="email"
                   value={settingsForm.officialEmail}
@@ -1868,7 +2036,7 @@ export const AdminDashboard: React.FC = () => {
             </div>
 
             <div>
-              <label className="block text-xs font-mono uppercase tracking-wider text-[#666666] mb-1">Texto 'Sobre Nós' / Trajetória Oficial</label>
+              <label className="block text-xs font-mono uppercase tracking-wider text-[#666666] mb-1">Texto “Sobre” / Contexto do Projeto</label>
               <textarea
                 rows={3}
                 value={settingsForm.aboutText}

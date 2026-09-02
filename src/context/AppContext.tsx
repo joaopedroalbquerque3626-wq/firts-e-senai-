@@ -32,7 +32,7 @@ interface AppContextType {
   openLeadModal: (target?: { type: 'COMPETITION' | 'TEAM' | 'INSTITUTIONAL'; id?: string; name?: string }) => void;
   closeLeadModal: () => void;
   loginAdmin: (password: string) => Promise<boolean>;
-  logoutAdmin: () => void;
+  logoutAdmin: () => Promise<void>;
   submitLead: (leadData: Partial<SponsorshipLead>) => Promise<{ success: boolean; error?: string }>;
   submitContact: (contactData: Partial<ContactMessage>) => Promise<{ success: boolean; error?: string }>;
   syncAdminData: (updatedState: Partial<AppStateData>) => Promise<boolean>;
@@ -170,14 +170,18 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       const res = await fetch(url);
       if (res.ok) {
         const json = await res.json();
-        setData((prev) => ({
-          ...prev,
+        setData({
+          ...defaultInitialState,
           ...json,
-          settings: { ...prev.settings, ...(json.settings || {}) }
-        }));
+          leads: adminMode ? (json.leads || []) : [],
+          contactMessages: adminMode ? (json.contactMessages || []) : [],
+          settings: { ...defaultInitialState.settings, ...(json.settings || {}) }
+        });
       } else if (res.status === 401 && adminMode) {
         setIsAdmin(false);
         showToast('Sua sessão administrativa expirou.', 'info');
+      } else {
+        showToast('Não foi possível carregar os dados do protótipo.', 'error');
       }
     } catch (err) {
       console.error('Error fetching data from API:', err);
@@ -200,7 +204,6 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       if (res.ok) {
         setIsAdmin(true);
         showToast('Acesso administrativo autorizado.', 'success');
-        await fetchData(true);
         return true;
       } else {
         const err = await res.json();
@@ -213,11 +216,14 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     }
   };
 
-  const logoutAdmin = () => {
-    void fetch('/api/admin/auth/logout', { method: 'POST' });
-    setIsAdmin(false);
-    showToast('Sessão administrativa encerrada.', 'info');
-    void fetchData(false);
+  const logoutAdmin = async () => {
+    try {
+      await fetch('/api/admin/auth/logout', { method: 'POST' });
+    } finally {
+      setIsAdmin(false);
+      setData((current) => ({ ...current, leads: [], contactMessages: [] }));
+      showToast('Sessão administrativa encerrada.', 'info');
+    }
   };
 
   const submitLead = async (leadData: Partial<SponsorshipLead>): Promise<{ success: boolean; error?: string }> => {
@@ -229,7 +235,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       });
       const resJson = await res.json();
       if (res.ok) {
-        showToast('Solicitação de patrocínio enviada com sucesso! Entraremos em contato.', 'success');
+        showToast('Solicitação registrada no painel demonstrativo.', 'success');
         if (isAdmin) {
           fetchData();
         }
@@ -253,7 +259,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       });
       const resJson = await res.json();
       if (res.ok) {
-        showToast('Mensagem enviada com sucesso!', 'success');
+        showToast('Mensagem registrada no painel demonstrativo.', 'success');
         if (isAdmin) {
           fetchData();
         }
@@ -278,7 +284,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       if (res.ok) {
         const json = await res.json();
         setData(json.state);
-        showToast('Alterações salvas e publicadas com sucesso!', 'success');
+        showToast('Alterações salvas no protótipo com sucesso!', 'success');
         return true;
       }
       if (res.status === 401) setIsAdmin(false);
@@ -297,7 +303,11 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         const json = await res.json();
         setData(json.state);
         showToast('Dados de demonstração carregados com sucesso!', 'success');
+        return;
       }
+      if (res.status === 401) setIsAdmin(false);
+      const error = await res.json().catch(() => ({}));
+      showToast(error.error || 'Não foi possível carregar os dados de exemplo.', 'error');
     } catch (err) {
       showToast('Erro ao carregar dados de exemplo.', 'error');
     }
@@ -310,7 +320,11 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         const json = await res.json();
         setData(json.state);
         showToast('Todos os registros foram zerados. Estado vazio ativo.', 'info');
+        return;
       }
+      if (res.status === 401) setIsAdmin(false);
+      const error = await res.json().catch(() => ({}));
+      showToast(error.error || 'Não foi possível limpar os dados.', 'error');
     } catch (err) {
       showToast('Erro ao limpar dados.', 'error');
     }

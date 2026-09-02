@@ -1,6 +1,6 @@
 # Portal de Competições e Patrocínio
 
-Aplicação web para publicar competições, equipes, resultados e oportunidades de patrocínio. O projeto usa React, TypeScript, Vite, Tailwind CSS e Express.
+Protótipo acadêmico para cadastrar e apresentar competições, equipes, resultados e oportunidades de patrocínio. O projeto usa React, TypeScript, Vite, Tailwind CSS e Express.
 
 > Este é um projeto independente. Menções e marcas de terceiros pertencem aos respectivos titulares. Nenhum conteúdo demonstrativo deve ser tratado como informação oficial.
 
@@ -17,7 +17,7 @@ cp .env.example .env
 npm run dev
 ```
 
-A aplicação fica disponível em `http://localhost:3000` por padrão.
+A aplicação fica disponível em `http://localhost:3000` por padrão e já inicia com um cenário demonstrativo preenchido.
 
 Antes de usar o painel, altere `ADMIN_SECRET` no arquivo `.env`. Em produção, a aplicação não inicia sem essa variável.
 
@@ -50,4 +50,4 @@ Em hospedagens com disco efêmero, configure `DATA_DIR` para um volume persisten
 
 ## Conteúdo demonstrativo
 
-O painel possui uma opção explícita para carregar dados fictícios de layout. Essa ação exige confirmação, substitui os dados existentes e não deve ser usada para publicar afirmações oficiais.
+O painel possui opções para restaurar os dados fictícios ou testar o estado vazio. A restauração exige confirmação e substitui os dados existentes. Senha local: `admin2026`.

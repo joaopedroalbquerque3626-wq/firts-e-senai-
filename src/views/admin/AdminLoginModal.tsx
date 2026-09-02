@@ -95,9 +95,11 @@ export const AdminLoginModal: React.FC<AdminLoginModalProps> = ({ isOpen, onClos
               />
               <KeyRound className="w-4 h-4 text-[#888888] absolute left-3.5 top-3" />
             </div>
-            <p className="mt-2 text-[11px] text-[#666666] font-mono">
-              Senha do protótipo local: <strong className="text-[#C2410C]">admin2026</strong>
-            </p>
+            {import.meta.env.DEV && (
+              <p className="mt-2 text-[11px] text-[#666666] font-mono">
+                Senha do protótipo local: <strong className="text-[#C2410C]">admin2026</strong>
+              </p>
+            )}
           </div>
 
           <button

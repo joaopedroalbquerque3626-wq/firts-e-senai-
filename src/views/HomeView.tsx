@@ -14,10 +14,13 @@ import {
   Compass,
   Lightbulb,
   Globe2,
-  Smile
+  Smile,
+  ExternalLink,
+  Quote
 } from 'lucide-react';
 import { CompetitionStatus } from '../types';
 import { FirstLogo, SenaiLogo } from '../components/Logos';
+import { formatDate } from '../utils/formatters';
 
 export const HomeView: React.FC = () => {
   const { data, navigateTo, openLeadModal } = useApp();
@@ -28,7 +31,6 @@ export const HomeView: React.FC = () => {
   const publishedStories = data.stories.filter((s) => s.publishStatus === 'published');
   const verifiedMetrics = data.metrics.filter((m) => m.publishStatus === 'published' && m.verified);
   const activeSponsors = data.sponsors.filter((s) => s.active);
-  const latestResults = data.results.filter((r) => r.publishStatus === 'published').slice(0, 3);
   const featuredCompetition = publishedCompetitions[0];
 
   const getStatusBadge = (status: CompetitionStatus) => {
@@ -176,7 +178,7 @@ export const HomeView: React.FC = () => {
               </div>
 
               {/* Motto highlight */}
-              <div className="pt-4 flex items-center justify-center lg:justify-start gap-6 text-xs text-slate-400">
+              <div className="pt-4 flex flex-wrap items-center justify-center lg:justify-start gap-x-6 gap-y-2 text-xs text-slate-400">
                 <div className="flex items-center gap-2">
                   <CheckCircle2 className="w-4 h-4 text-[#78BE20]" />
                   <span>More Than Robots®</span>
@@ -211,7 +213,7 @@ export const HomeView: React.FC = () => {
                     <div className="grid grid-cols-2 gap-2 text-xs bg-black/20 p-3 rounded-xl mb-4 border border-white/5">
                       <div>
                         <span className="text-slate-400 block text-[10px] uppercase">Data:</span>
-                        <span className="font-semibold text-white">{featuredCompetition.startDate || 'A confirmar'}</span>
+                        <span className="font-semibold text-white">{formatDate(featuredCompetition.startDate)}</span>
                       </div>
                       <div>
                         <span className="text-slate-400 block text-[10px] uppercase">Modalidade:</span>
@@ -301,7 +303,7 @@ export const HomeView: React.FC = () => {
             </div>
 
             {/* Filter Tabs */}
-            <div className="flex items-center gap-1.5 bg-slate-200/80 p-1 rounded-xl text-xs font-bold">
+            <div className="flex w-full md:w-auto items-center gap-1.5 bg-slate-200/80 p-1 rounded-xl text-xs font-bold overflow-x-auto">
               <button
                 onClick={() => setActiveProgressionTab('all')}
                 className={`px-3 py-1.5 rounded-lg transition-all ${
@@ -344,7 +346,7 @@ export const HomeView: React.FC = () => {
                 className="bg-white border border-slate-200 rounded-2xl p-7 sm:p-8 hover:shadow-xl hover:border-slate-300 transition-all flex flex-col justify-between"
               >
                 <div>
-                  <div className="flex items-center justify-between mb-4">
+                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-4">
                     <span className={`px-3 py-1 rounded-full text-xs font-bold border ${program.badgeColor}`}>
                       {program.tag}
                     </span>
@@ -374,7 +376,7 @@ export const HomeView: React.FC = () => {
                   </div>
                 </div>
 
-                <div className="pt-4 border-t border-slate-100 flex items-center justify-between">
+                <div className="pt-4 border-t border-slate-100 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                   <button
                     onClick={() => navigateTo('competicoes')}
                     className="text-xs font-bold text-[#0066B2] hover:text-[#004C85] inline-flex items-center gap-1.5"
@@ -515,8 +517,9 @@ export const HomeView: React.FC = () => {
             </button>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {publishedCompetitions.slice(0, 3).map((comp) => (
+          {publishedCompetitions.length > 0 ? (
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              {publishedCompetitions.slice(0, 3).map((comp) => (
               <div
                 key={comp.id}
                 className="bg-white border border-slate-200 rounded-2xl overflow-hidden hover:shadow-lg transition-all flex flex-col justify-between"
@@ -549,7 +552,7 @@ export const HomeView: React.FC = () => {
                     <div className="space-y-2 text-xs text-slate-500 mb-6">
                       <div className="flex items-center gap-2">
                         <Calendar className="w-3.5 h-3.5 text-[#0066B2]" />
-                        <span>{comp.startDate || 'Data a confirmar'}</span>
+                        <span>{formatDate(comp.startDate, 'Data a confirmar')}</span>
                       </div>
                       <div className="flex items-center gap-2">
                         <MapPin className="w-3.5 h-3.5 text-[#0066B2]" />
@@ -563,15 +566,20 @@ export const HomeView: React.FC = () => {
                   </div>
 
                   <button
-                    onClick={() => navigateTo('competition-detail', comp.slug)}
+                    onClick={() => navigateTo('competition-detail', comp.slug || comp.id)}
                     className="w-full py-2.5 bg-slate-100 hover:bg-[#0066B2] text-[#002B49] hover:text-white rounded-lg text-xs font-bold transition-all text-center"
                   >
                     Ver Súmula e Pits do Torneio
                   </button>
                 </div>
               </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          ) : (
+            <div className="rounded-2xl border border-dashed border-slate-300 bg-white p-8 text-center text-sm text-slate-600">
+              Nenhuma competição foi publicada neste cenário.
+            </div>
+          )}
         </div>
       </section>
 
@@ -584,7 +592,7 @@ export const HomeView: React.FC = () => {
                 Pit Directory
               </span>
               <h2 className="font-heading text-2xl sm:text-3xl font-black text-[#002B49] mt-1">
-                Equipes Oficiais de Robótica
+                Equipes do Cenário
               </h2>
             </div>
 
@@ -597,8 +605,9 @@ export const HomeView: React.FC = () => {
             </button>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {publishedTeams.slice(0, 3).map((team) => (
+          {publishedTeams.length > 0 ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              {publishedTeams.slice(0, 3).map((team) => (
               <div
                 key={team.id}
                 className="bg-slate-50 border border-slate-200 rounded-2xl p-6 hover:shadow-lg transition-all flex flex-col justify-between"
@@ -639,9 +648,9 @@ export const HomeView: React.FC = () => {
                   )}
                 </div>
 
-                <div className="pt-4 border-t border-slate-200 flex items-center justify-between gap-3">
+                <div className="pt-4 border-t border-slate-200 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                   <button
-                    onClick={() => navigateTo('team-detail', team.slug)}
+                    onClick={() => navigateTo('team-detail', team.slug || team.id)}
                     className="text-xs font-bold text-[#0066B2] hover:text-[#004C85]"
                   >
                     Ver Perfil & Conquistas
@@ -655,10 +664,42 @@ export const HomeView: React.FC = () => {
                   </button>
                 </div>
               </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          ) : (
+            <div className="rounded-2xl border border-dashed border-slate-300 bg-slate-50 p-8 text-center text-sm text-slate-600">
+              Nenhuma equipe foi publicada neste cenário.
+            </div>
+          )}
         </div>
       </section>
+
+      {publishedStories.length > 0 && (
+        <section id="stories-section" className="py-16 sm:py-20 bg-[#f8fafc] border-b border-slate-200">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="max-w-2xl mb-8">
+              <span className="text-xs font-bold uppercase tracking-wider text-[#0066B2]">Histórias do cenário</span>
+              <h2 className="font-heading text-2xl sm:text-3xl font-black text-[#002B49] mt-1">Pessoas por trás dos robôs</h2>
+              <p className="text-xs sm:text-sm text-slate-600 mt-2">Relatos demonstrativos publicados pelo painel administrativo.</p>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {publishedStories.slice(0, 3).map((story) => (
+                <article key={story.id} className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
+                  <Quote className="w-6 h-6 text-[#00A3E0] mb-4" />
+                  <h3 className="font-heading font-bold text-lg text-[#002B49] leading-snug">{story.title}</h3>
+                  {story.subtitle && <p className="text-xs text-slate-500 mt-2">{story.subtitle}</p>}
+                  <p className="text-sm text-slate-700 leading-relaxed mt-4 line-clamp-5">{story.content}</p>
+                  <div className="mt-5 pt-4 border-t border-slate-100 text-xs">
+                    <strong className="text-[#002B49]">{story.subjectName}</strong>
+                    <span className="text-slate-500"> · {story.subjectRole.toLowerCase()}</span>
+                  </div>
+                </article>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* 07: CORPORATE SPONSORS & PARTNERS (SENAI, SESI, Qualcomm, Rockwell, Apple, Boeing) */}
       <section id="sponsors-section" className="py-16 bg-[#f8fafc]">
@@ -692,31 +733,37 @@ export const HomeView: React.FC = () => {
 
           <div className="text-center max-w-2xl mx-auto mb-10">
             <span className="text-xs font-bold uppercase tracking-wider text-[#0066B2]">
-              Aliança Global de Inovação
+              Cenário demonstrativo
             </span>
             <h2 className="font-heading text-2xl sm:text-3xl font-black text-[#002B49] mt-1">
-              Empresas & Patrocinadores Globais
+              Apoiadores e parceiros cadastrados
             </h2>
             <p className="text-xs sm:text-sm text-slate-600 mt-2">
-              Líderes em tecnologia, manufatura e aviação que investem em bolsas, arenas e no desenvolvimento de estudantes FIRST®.
+              Organizações fictícias usadas para demonstrar como os parceiros podem aparecer no portal.
             </p>
           </div>
 
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4 items-center">
             {activeSponsors.map((sponsor) => (
-              <div
-                key={sponsor.id}
-                className="bg-white border border-slate-200 rounded-xl p-4 flex flex-col items-center justify-center text-center h-28 hover:shadow-md transition-all"
-              >
-                <img
-                  src={sponsor.logoUrl}
-                  alt={sponsor.name}
-                  className="max-h-10 max-w-full object-contain mb-2 grayscale hover:grayscale-0 transition-all"
-                />
-                <span className="text-[11px] font-bold text-slate-700 truncate w-full">
-                  {sponsor.name}
-                </span>
-              </div>
+              sponsor.websiteUrl ? (
+                <a
+                  key={sponsor.id}
+                  href={sponsor.websiteUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="group bg-white border border-slate-200 rounded-xl p-4 flex flex-col items-center justify-center text-center h-28 hover:shadow-md hover:border-[#0066B2] transition-all"
+                >
+                  <img src={sponsor.logoUrl} alt="" className="max-h-10 max-w-full object-contain mb-2 grayscale group-hover:grayscale-0 transition-all" />
+                  <span className="text-[11px] font-bold text-slate-700 truncate w-full inline-flex items-center justify-center gap-1">
+                    {sponsor.name} <ExternalLink className="w-3 h-3 shrink-0" />
+                  </span>
+                </a>
+              ) : (
+                <div key={sponsor.id} className="bg-white border border-slate-200 rounded-xl p-4 flex flex-col items-center justify-center text-center h-28">
+                  <img src={sponsor.logoUrl} alt="" className="max-h-10 max-w-full object-contain mb-2 grayscale" />
+                  <span className="text-[11px] font-bold text-slate-700 truncate w-full">{sponsor.name}</span>
+                </div>
+              )
             ))}
           </div>
 

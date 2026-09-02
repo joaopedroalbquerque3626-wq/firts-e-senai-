@@ -95,7 +95,7 @@ export const Footer: React.FC<FooterProps> = ({ onOpenAdminLogin }) => {
                   className="hover:text-white transition-colors flex items-center justify-between w-full text-left group"
                 >
                   <span>FIRST® LEGO® League (FLL)</span>
-                  <span className="text-[10px] text-slate-500 group-hover:text-[#00A3E0]">4-16 anos</span>
+                  <span className="text-[10px] text-slate-500 group-hover:text-[#00A3E0]">5-16 anos</span>
                 </button>
               </li>
               <li>
@@ -203,9 +203,12 @@ export const Footer: React.FC<FooterProps> = ({ onOpenAdminLogin }) => {
           <p className="text-center md:text-left">
             © {new Date().getFullYear()} {settings.platformName}. Criado por <strong className="text-slate-300">João Pedro Albuquerque Montenegro</strong>. Projeto independente, sem afiliação oficial presumida. Marcas citadas pertencem aos seus respectivos titulares.
           </p>
-          <div className="flex items-center gap-4 shrink-0">
+          <div className="flex flex-wrap items-center justify-center gap-4">
             <a href="https://www.firstinspires.org" target="_blank" rel="noopener noreferrer" className="hover:text-slate-300 inline-flex items-center gap-1 transition-colors">
-              firstinspires.org oficial <ExternalLink className="w-3 h-3" />
+              Site oficial FIRST® <ExternalLink className="w-3 h-3" />
+            </a>
+            <a href="https://www.portaldaindustria.com.br/sesi/canais/robotica/" target="_blank" rel="noopener noreferrer" className="hover:text-slate-300 inline-flex items-center gap-1 transition-colors">
+              Robótica SESI <ExternalLink className="w-3 h-3" />
             </a>
           </div>
         </div>

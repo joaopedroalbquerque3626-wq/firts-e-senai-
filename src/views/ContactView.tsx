@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useApp } from '../context/AppContext';
-import { Mail, Phone, MapPin, Send, CheckCircle, Instagram, Youtube, Linkedin, HeartHandshake, Award, Bot } from 'lucide-react';
+import { Mail, Phone, MapPin, Send, CheckCircle, Instagram, Youtube, Linkedin, HeartHandshake, Globe } from 'lucide-react';
 
 export const ContactView: React.FC = () => {
   const { data, submitContact } = useApp();
@@ -65,7 +65,7 @@ export const ContactView: React.FC = () => {
           <div className="lg:col-span-5 space-y-6">
             <div className="bg-white border border-slate-200 rounded-2xl p-6 sm:p-8 space-y-6 shadow-xs">
               <h2 className="font-heading font-bold text-xl text-[#002B49] border-b border-slate-100 pb-3">
-                Informações Institucionais
+                Informações do protótipo
               </h2>
 
               <div className="space-y-4 text-xs text-slate-600">
@@ -110,7 +110,7 @@ export const ContactView: React.FC = () => {
                   <MapPin className="w-4 h-4 text-[#0066B2] mt-0.5 shrink-0" />
                   <div>
                     <span className="text-[10px] uppercase font-bold text-slate-400 block">
-                      Sede & Coordenação Operacional
+                    Localização
                     </span>
                     <span className="text-slate-800">
                       {settings.officialAddress || 'Não informado'}
@@ -152,6 +152,15 @@ export const ContactView: React.FC = () => {
                   >
                     <Linkedin className="w-4 h-4" />
                   </a>}
+                  {settings.socialLinks.website && <a
+                    href={settings.socialLinks.website}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="p-2.5 bg-slate-100 hover:bg-slate-200 text-[#002B49] rounded-xl transition-colors"
+                    title="Site oficial de referência"
+                  >
+                    <Globe className="w-4 h-4" />
+                  </a>}
                 </div>
               </div>
             </div>
@@ -160,7 +169,7 @@ export const ContactView: React.FC = () => {
             <div className="bg-gradient-to-br from-[#002B49] to-[#001A2E] text-white rounded-2xl p-6 space-y-3 shadow-md">
               <div className="flex items-center gap-2 text-[#78BE20] text-xs font-bold uppercase tracking-wider">
                 <HeartHandshake className="w-4 h-4" />
-                <span>Voluntariado FIRST®</span>
+                <span>Voluntariado e mentoria</span>
               </div>
               <h3 className="font-heading font-bold text-lg text-white">
                 Apoie como mentor ou voluntário
@@ -185,7 +194,7 @@ export const ContactView: React.FC = () => {
                     Mensagem Enviada com Sucesso!
                   </h3>
                   <p className="text-xs sm:text-sm text-green-800">
-                    Sua mensagem foi protocolada. Nossa equipe retornará o contato o mais breve possível.
+                    Sua mensagem foi salva e já aparece no painel administrativo demonstrativo.
                   </p>
                   <button
                     onClick={() => setIsSuccess(false)}
@@ -286,7 +295,7 @@ export const ContactView: React.FC = () => {
                   <button
                     type="submit"
                     disabled={isSubmitting || !privacyConsent}
-                    className="px-8 py-3.5 bg-[#0066B2] hover:bg-[#004C85] text-white text-xs font-bold uppercase tracking-wider rounded-xl transition-all shadow-md flex items-center gap-2 disabled:opacity-50"
+                    className="w-full sm:w-auto px-8 py-3.5 bg-[#0066B2] hover:bg-[#004C85] text-white text-xs font-bold uppercase tracking-wider rounded-xl transition-all shadow-md flex items-center justify-center gap-2 disabled:opacity-50"
                   >
                     <Send className="w-4 h-4" />
                     <span>{isSubmitting ? 'Enviando Mensagem...' : 'Enviar mensagem'}</span>

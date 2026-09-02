@@ -17,13 +17,19 @@ import { ContactView } from './views/ContactView';
 import { AdminDashboard } from './views/admin/AdminDashboard';
 
 export const AppContent: React.FC = () => {
-  const { activeRoute, isAdmin } = useApp();
+  const { activeRoute, isAdmin, isLoading } = useApp();
   const [showAdminLogin, setShowAdminLogin] = useState(false);
 
   // Scroll to top on route change
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: 'instant' });
   }, [activeRoute]);
+
+  useEffect(() => {
+    if (activeRoute === 'admin' && !isAdmin && !isLoading) {
+      setShowAdminLogin(true);
+    }
+  }, [activeRoute, isAdmin, isLoading]);
 
   const renderActiveView = () => {
     switch (activeRoute) {
@@ -60,7 +66,16 @@ export const AppContent: React.FC = () => {
       <Header onOpenAdminLogin={() => setShowAdminLogin(true)} />
 
       {/* Main Page Content */}
-      <main className="flex-1 w-full">{renderActiveView()}</main>
+      <main className="flex-1 w-full" aria-busy={isLoading}>
+        {isLoading ? (
+          <div className="min-h-[55vh] bg-slate-50 flex items-center justify-center px-4">
+            <div className="flex items-center gap-3 text-[#002B49]" role="status">
+              <span className="w-4 h-4 rounded-full border-2 border-[#0066B2] border-t-transparent animate-spin" />
+              <span className="text-sm font-semibold">Carregando o protótipo...</span>
+            </div>
+          </div>
+        ) : renderActiveView()}
+      </main>
 
       {/* Global Footer (Rendered except in deep admin view) */}
       {!isAdminView && <Footer onOpenAdminLogin={() => setShowAdminLogin(true)} />}

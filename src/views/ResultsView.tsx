@@ -1,7 +1,8 @@
 import React, { useState, useMemo } from 'react';
 import { useApp } from '../context/AppContext';
 import { EmptyState } from '../components/EmptyState';
-import { Trophy, Calendar, Filter, Award, Bot, Sparkles, CheckCircle2, ShieldCheck } from 'lucide-react';
+import { Trophy, Calendar, Filter, Award, Bot } from 'lucide-react';
+import { formatDate } from '../utils/formatters';
 
 export const ResultsView: React.FC = () => {
   const { data, navigateTo } = useApp();
@@ -23,15 +24,15 @@ export const ResultsView: React.FC = () => {
         <div className="border-b border-slate-200 pb-8 mb-10">
           <div className="inline-flex items-center gap-2 px-3 py-1 bg-blue-50 border border-blue-200 rounded-full mb-3 text-xs font-bold text-[#0066B2]">
             <Trophy className="w-3.5 h-3.5 text-[#0066B2]" />
-            <span>Súmulas Oficiais, Placares de Arena & Prêmios FIRST®</span>
+            <span>Súmulas, placares de arena e resultados</span>
           </div>
 
           <h1 className="font-heading font-black text-3xl sm:text-5xl text-[#002B49] tracking-tight leading-tight">
-            Resultados & Prêmios Oficiais
+            Resultados & Prêmios
           </h1>
 
           <p className="text-sm sm:text-base text-slate-600 max-w-2xl mt-2 leading-relaxed">
-            Pontuações homologadas de alianças (Aliança Vermelha vs Aliança Azul), pontos de fase autônoma, teleoperada e entrega de Blue Banners e FIRST Impact Awards.
+            Consulte pontuações demonstrativas de alianças, etapas, vencedores e observações técnicas cadastradas no painel.
           </p>
         </div>
 
@@ -62,7 +63,7 @@ export const ResultsView: React.FC = () => {
         {publishedResults.length === 0 ? (
           <EmptyState
             title="Nenhuma súmula de arena publicada ainda"
-            description="Os boletins oficiais e súmulas das partidas de alianças da FIRST® serão homologados e publicados após a validação dos juízes de arena."
+            description="Ainda não há resultados publicados. O administrador pode registrar uma súmula no painel."
             adminActionTab="results"
           />
         ) : filteredResults.length === 0 ? (
@@ -106,7 +107,7 @@ export const ResultsView: React.FC = () => {
 
                       <div className="flex items-center gap-1.5 text-xs text-slate-500 font-medium">
                         <Calendar className="w-3.5 h-3.5 text-slate-400" />
-                        <span>{new Date(result.date).toLocaleDateString('pt-BR')}</span>
+                        <span>{formatDate(result.date)}</span>
                       </div>
                     </div>
 
@@ -171,7 +172,7 @@ export const ResultsView: React.FC = () => {
 
                       <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-[#002B49] text-white text-xs font-bold rounded-lg shadow-xs">
                         <Award className="w-3.5 h-3.5 text-[#00A3E0]" />
-                        <span>Súmula Homologada FIRST®</span>
+                        <span>Resultado publicado</span>
                       </div>
                     </div>
                   )}
